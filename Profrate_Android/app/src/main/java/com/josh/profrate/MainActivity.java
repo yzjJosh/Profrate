@@ -3,6 +3,8 @@ package com.josh.profrate;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.view.View;
@@ -17,7 +19,10 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.josh.profrate.elements.Credential;
+import com.josh.profrate.viewContents.ViewContent;
+import com.josh.profrate.viewContents.ViewProfessors;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -37,9 +42,13 @@ public class MainActivity extends Activity {
     private LinearLayout error_sign;
     private LinearLayout warning_sign;
     private int cur_view;
+    private ViewContent content;
 
     private boolean isLoading = false;
     private boolean isActive = true;
+
+    private BackEndTaskHandler backEndTaskHandler = new BackEndTaskHandler(this);
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,8 +72,8 @@ public class MainActivity extends Activity {
     public void onStart(){
         super.onStart();
         isActive = true;
-        /*if(content != null && !content.isActive())
-            content.show();*/
+        if(content != null && !content.isActive())
+            content.show();
     }
 
     @Override
@@ -77,6 +86,10 @@ public class MainActivity extends Activity {
     private List<Map<String, Object>> getMenuData(){
         List<Map<String, Object>> data = new ArrayList<Map<String, Object>>();
         HashMap<String, Object> item = new HashMap<String, Object>();
+        item.put("icon", R.drawable.error);
+        item.put("view_id", VIEW_PROFESSORS);
+        data.add(item);
+        item = new HashMap<String, Object>();
         item.put("icon", R.drawable.user);
         item.put("view_id", LOG_OUT);
         data.add(item);
@@ -86,6 +99,15 @@ public class MainActivity extends Activity {
     private void switchContent(int view_id){
         if(view_id >VIEW_PROFESSORS || view_id < VIEW_PROFESSORS) return;
         title.setText(view_names[view_id]);
+        if(content != null) {
+            content.clear(); //Clear existing content firstly
+            content = null;
+        }
+        progressBar.setVisibility(View.VISIBLE);
+        error_sign.setVisibility(View.GONE);
+        warning_sign.setVisibility(View.GONE);
+        isLoading = true;
+        new LoadingThread(view_id).start();
     }
 
     private AdapterView.OnItemClickListener listItemListener = new AdapterView.OnItemClickListener(){
@@ -119,8 +141,7 @@ public class MainActivity extends Activity {
             switchContent(cur_view);
     }
 
-    class MenuListAdapter extends BaseAdapter
-    {
+    class MenuListAdapter extends BaseAdapter {
         private List<Map<String, Object>> menuData;
 
         public MenuListAdapter(List<Map<String, Object>> data){
@@ -156,4 +177,65 @@ public class MainActivity extends Activity {
             return convertView;
         }
     }
+
+    class LoadingThread extends Thread{
+
+        private final int type;
+
+        public LoadingThread(int type){
+            this.type = type;
+        }
+
+        @Override
+        public void run(){
+            HashMap<String, Object> data = new HashMap<String, Object>();
+            data.put("type", type);
+            try {
+                switch (type) {
+                    case VIEW_PROFESSORS:
+                        //data.put("streams", BackEndAPI.getOwnedStreams(Credential.getCredential()));
+                        break;
+                    default:
+                        break;
+                }
+                data.put("success", true);
+            } catch (Exception e) {
+                e.printStackTrace();
+                data.put("success", false);
+            }
+            Message msg = new Message();
+            msg.obj = data;
+            backEndTaskHandler.sendMessage(msg);
+        }
+    }
+
+    static class BackEndTaskHandler extends Handler {
+        private  MainActivity activity;
+
+        public BackEndTaskHandler(MainActivity activity){
+            this.activity = activity;
+        }
+        @Override
+        @SuppressWarnings("unchecked")
+        public void handleMessage(Message msg){
+            HashMap<String, Object> data = (HashMap<String, Object>)msg.obj;
+            if(activity.cur_view != (Integer)data.get("type")) return;
+            activity.progressBar.setVisibility(View.GONE);
+            activity.isLoading = false;
+            if((Boolean) data.get("success")) {
+                switch((Integer)data.get("type")) {
+                    case VIEW_PROFESSORS:
+                        activity.content = new ViewProfessors(activity, activity.content_layout);
+                        break;
+                    default:
+                        break;
+                }
+                if(activity.isActive)
+                    activity.content.show();
+            }else
+                activity.error_sign.setVisibility(View.VISIBLE);
+        }
+    }
+
+
 }

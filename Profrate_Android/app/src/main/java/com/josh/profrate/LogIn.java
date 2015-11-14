@@ -18,18 +18,17 @@ public class LogIn extends Activity {
 
     private final static int ACTIVITY_RESULT_FROM_ACCOUNT_SELECTION = 0;
     private boolean isLoggingIn = false;
-    private static LogInHandler logInHandler;
+    private LogInHandler logInHandler = new LogInHandler(this);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if(Credential.isLoggedIn()) {
-            startActivity(new Intent(this, MainActivity.class));
+            startActivity(new Intent(this, MainActivity.class).putExtra("view", MainActivity.VIEW_PROFESSORS));
             finish();
             return;
         }
         setContentView(R.layout.activity_log_in);
-        logInHandler = new LogInHandler(this);
     }
 
     @Override
@@ -71,7 +70,7 @@ public class LogIn extends Activity {
         @Override
         public void handleMessage(Message msg){
             if(Credential.isLoggedIn()) {
-                context.startActivity(new Intent(context, MainActivity.class));
+                context.startActivity(new Intent(context, MainActivity.class).putExtra("view", MainActivity.VIEW_PROFESSORS));
                 ((Activity)context).finish();
             }
             else

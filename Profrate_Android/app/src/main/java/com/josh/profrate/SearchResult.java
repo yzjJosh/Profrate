@@ -10,9 +10,11 @@ import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.josh.profrate.elements.Professor;
 import com.josh.profrate.viewContents.ViewContent;
 import com.josh.profrate.viewContents.ViewProfessors;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 public class SearchResult extends Activity {
@@ -108,7 +110,7 @@ public class SearchResult extends Activity {
             activity.progressBar.setVisibility(View.GONE);
             activity.isLoading = false;
             if((Boolean) data.get("success")) {
-                activity.content = new ViewProfessors(activity, activity.content_layout);
+                activity.content = new ViewProfessors(activity, activity.content_layout, new ArrayList<Professor>());
                 if(activity.isActive)
                     activity.content.show();
             }else

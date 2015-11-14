@@ -19,6 +19,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.josh.profrate.elements.Credential;
+import com.josh.profrate.elements.Professor;
 import com.josh.profrate.viewContents.ViewContent;
 import com.josh.profrate.viewContents.ViewProfessors;
 
@@ -225,7 +226,7 @@ public class MainActivity extends Activity {
             if((Boolean) data.get("success")) {
                 switch((Integer)data.get("type")) {
                     case VIEW_PROFESSORS:
-                        activity.content = new ViewProfessors(activity, activity.content_layout);
+                        activity.content = new ViewProfessors(activity, activity.content_layout, new ArrayList<Professor>());
                         break;
                     default:
                         break;

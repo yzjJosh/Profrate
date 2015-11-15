@@ -22,7 +22,6 @@ import android.widget.TextView;
 import android.os.Handler;
 
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -48,7 +47,8 @@ public class SearchView extends Dialog implements Runnable{
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 if (actionId == EditorInfo.IME_ACTION_SEARCH && search.getText().length() > 0){
-                    Intent intent = new Intent(getContext(), SearchResult.class);
+                    Intent intent = new Intent(getContext(), SecondaryActivity.class);
+                    intent.putExtra("view", SecondaryActivity.SEARCH);
                     intent.putExtra("key", search.getText().toString());
                     getContext().startActivity(intent);
                     dismiss();

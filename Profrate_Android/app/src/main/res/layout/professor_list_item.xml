@@ -42,22 +42,31 @@
         android:gravity="center">
 
         <ImageView
+            android:id="@+id/prof_comment_icon"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="0.33"
-            android:src="@drawable/comments"/>
+            android:src="@drawable/comments"
+            android:clickable="true"
+            android:background="@drawable/proflist_button_background"/>
 
         <ImageView
+            android:id="@+id/prof_like_icon"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="0.33"
-            android:src="@drawable/like"/>
+            android:src="@drawable/like"
+            android:clickable="true"
+            android:background="@drawable/proflist_button_background"/>
 
         <ImageView
+            android:id="@+id/prof_dislike_icon"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="0.33"
-            android:src="@drawable/dislike"/>
+            android:src="@drawable/dislike"
+            android:clickable="true"
+            android:background="@drawable/proflist_button_background"/>
 
     </LinearLayout>
 

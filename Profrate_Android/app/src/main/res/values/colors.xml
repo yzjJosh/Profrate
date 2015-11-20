@@ -6,6 +6,7 @@
     <color name="colorPrimaryShallow">#a6d6f0</color>
     <color name="white">#FFFFFF</color>
     <color name="black">#000000</color>
+    <color name="gray">#baafaf</color>
     <color name="menu_selected">#e9e7e7</color>
     <color name="proflist_selected">#ccc9c9</color>
 </resources>

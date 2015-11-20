@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center">
+
+    <LinearLayout
+        android:id="@+id/comment_btn"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="0.33"
+        android:clickable="true"
+        android:background="@drawable/proflist_button_background"
+        android:gravity="center">
+
+        <ImageView
+            android:id="@+id/comment_icon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/comments"/>
+
+        <TextView
+            android:id="@+id/comment_num"
+            android:layout_marginStart="5dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="478"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/like_btn"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="0.33"
+        android:clickable="true"
+        android:background="@drawable/proflist_button_background"
+        android:gravity="center">
+
+        <ImageView
+            android:id="@+id/like_icon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/like_bw" />
+
+        <TextView
+            android:id="@+id/like_num"
+            android:layout_marginStart="5dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="6789"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/dislike_btn"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="0.33"
+        android:clickable="true"
+        android:background="@drawable/proflist_button_background"
+        android:gravity="center">
+
+        <ImageView
+            android:id="@+id/dislike_icon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/dislike_bw" />
+
+        <TextView
+            android:id="@+id/dislike_num"
+            android:layout_marginStart="5dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="6789"/>
+    </LinearLayout>
+
+</LinearLayout>

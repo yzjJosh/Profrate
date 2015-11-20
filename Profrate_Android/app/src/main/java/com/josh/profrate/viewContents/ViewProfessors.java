@@ -19,11 +19,12 @@ import java.util.List;
 public class ViewProfessors extends ViewContent {
 
     private final List<Professor> professors;
-    private boolean isActive = false;
+    private boolean isActive;
 
     public ViewProfessors(Context context, ViewGroup parentLayout, List<Professor> professors) {
         super(context, parentLayout);
         this.professors = professors;
+        this.isActive = false;
         professors.add(null);
         professors.add(null);
         professors.add(null);
@@ -63,30 +64,49 @@ public class ViewProfessors extends ViewContent {
         }
     };
 
-    private View.OnClickListener commentIconListener = new View.OnClickListener(){
+    private class CommentBtnListener implements View.OnClickListener{
+
+        private final Professor professor;
+
+        public CommentBtnListener(Professor professor){
+            this.professor = professor;
+        }
+
         @Override
         public void onClick(View v) {
             Intent intent = new Intent(context, SecondaryActivity.class);
             intent.putExtra("view", SecondaryActivity.COMMENTS);
             context.startActivity(intent);
         }
-    };
+    }
 
-    private View.OnClickListener likeIconListener = new View.OnClickListener(){
+    private class LikeBtnListener implements View.OnClickListener{
+
+        private final Professor professor;
+
+        public LikeBtnListener(Professor professor){
+            this.professor = professor;
+        }
+
         @Override
         public void onClick(View v) {
-            Intent intent = new Intent(context, SecondaryActivity.class);
-            context.startActivity(intent);
-        }
-    };
 
-    private View.OnClickListener dislikeIconListener = new View.OnClickListener(){
+        }
+    }
+
+    private class DislikeBtnListener implements View.OnClickListener{
+
+        private final Professor professor;
+
+        public DislikeBtnListener(Professor professor){
+            this.professor = professor;
+        }
+
         @Override
         public void onClick(View v) {
-            Intent intent = new Intent(context, SecondaryActivity.class);
-            context.startActivity(intent);
+
         }
-    };
+    }
 
     private class ProfListAdapter extends BaseAdapter{
 
@@ -110,9 +130,9 @@ public class ViewProfessors extends ViewContent {
             if (convertView == null) {
                 final LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
                 convertView = inflater.inflate(R.layout.professor_list_item, parent, false);
-                convertView.findViewById(R.id.prof_comment_icon).setOnClickListener(commentIconListener);
-                convertView.findViewById(R.id.prof_like_icon).setOnClickListener(likeIconListener);
-                convertView.findViewById(R.id.prof_dislike_icon).setOnClickListener(dislikeIconListener);
+                convertView.findViewById(R.id.comment_btn).setOnClickListener(new CommentBtnListener(professors.get(position)));
+                convertView.findViewById(R.id.like_btn).setOnClickListener(new LikeBtnListener(professors.get(position)));
+                convertView.findViewById(R.id.dislike_btn).setOnClickListener(new DislikeBtnListener(professors.get(position)));
             }
             return convertView;
         }

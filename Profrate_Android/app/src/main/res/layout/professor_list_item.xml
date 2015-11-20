@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -22,10 +23,13 @@
         android:textSize="15sp"
         android:text="Adjunct Professor"/>
 
-    <include layout="@layout/prof_rating"
+    <com.josh.profrate.elements.RatingStar
         android:layout_marginTop="10dp"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:maxRating="5"
+        app:rating="4.5"/>
 
     <ImageView
         android:id="@+id/photo"
@@ -34,41 +38,11 @@
         android:layout_height="300dp"
         android:src="@drawable/samplephoto"/>
 
-    <LinearLayout
+    <include
+        layout="@layout/comment_tool_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_marginTop="10dp"
-        android:gravity="center">
-
-        <ImageView
-            android:id="@+id/prof_comment_icon"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="0.33"
-            android:src="@drawable/comments"
-            android:clickable="true"
-            android:background="@drawable/proflist_button_background"/>
-
-        <ImageView
-            android:id="@+id/prof_like_icon"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="0.33"
-            android:src="@drawable/like"
-            android:clickable="true"
-            android:background="@drawable/proflist_button_background"/>
-
-        <ImageView
-            android:id="@+id/prof_dislike_icon"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="0.33"
-            android:src="@drawable/dislike"
-            android:clickable="true"
-            android:background="@drawable/proflist_button_background"/>
-
-    </LinearLayout>
+        android:layout_marginTop="10dp" />
 
 
 </LinearLayout>

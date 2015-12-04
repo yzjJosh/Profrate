@@ -23,8 +23,8 @@ def get_faculty_info(url):
         info['title'] = soup.find('div', class_='field-name-field-faculty-position').find('div', class_='field-item even').string
         special_title = soup.find('div', class_='field-name-field-special-title')
         info['special title'] = special_title.find('div', class_='field-item even').string if special_title else None
-        introduction = soup.find('div', class_='faculty-profile-content').find('p')
-        info['introduction'] = introduction.string if introduction else None
+        introduction = soup.find('div', class_='faculty-profile-content')
+        info['introduction'] = '\n'.join([tag.string if tag.string else ''.join(tag.strings) for tag in introduction.find_all('p')]) if introduction else None
         research_areas = soup.find('section', class_='field-name-field-related-research-areas')
         info['research areas'] = [tag.string for tag in research_areas.find_all('a')] if research_areas else []
         research_interests = soup.find('section', class_='field-name-field-research-interests')

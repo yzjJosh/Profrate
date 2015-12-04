@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+{% autoescape true %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Profrate Admin</title>
+</head>
+<body>
+    <form method="post" action="{{upload_url}}" enctype="multipart/form-data">
+        <input type="file" name="professor_info" required accept="application/json">
+        <input type="submit" value="Submit" name="submit">
+    </form>
+    {% for professor in professors%}
+    <p>
+        name:{{ professor.name }}
+        <br>title: {{ professor.title }}
+        <br>special title: {{ professor.special_title }}
+        <br>image: {{ professor.image }}
+        <br>introduction: {{ professor.introduction }}
+        <br>research areas: {{ professor.research_areas }}
+        <br>research interests: {{ professor.research_interests }}
+        <br>research groups: {{ professor.research_groups }}
+        <br>office: {{ professor.office }}
+        <br>phone: {{ professor.phone }}
+        <br>email: {{ professor.email }}
+        <br>personal website: {{ professor.personal_website }}
+        <br>rating:
+        <br>----personality: {{ professor.overallRating.personality }}
+        <br>----teaching skill: {{ professor.overallRating.teaching_skill }}
+        <br>----research skill: {{ professor.overallRating.research_skill }}
+        <br>----knowledge level: {{ professor.overallRating.knowledge_level }}
+        <br>----overall: {{ professor.overallSingleValueRating }}
+        <br>liked by: {{ professor.liked_by }}
+        <br>disliked by: {{ professor.disliked_by }}
+        <br>like num: {{ professor.like_num }}
+        <br>disliked num: {{ professor.dislike_num }}
+    </p>
+    {% endfor %}
+</body>
+</html>
+{% endautoescape %}

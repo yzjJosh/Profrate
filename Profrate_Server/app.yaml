@@ -12,6 +12,9 @@ handlers:
   script: Source.service.admin_control.app
   login: admin
 
+- url: /_ah/spi/.*
+  script: Source.backend.API.APPLICATION
+
 - url: .*
   script: main.app
 
@@ -21,3 +24,9 @@ libraries:
 
 - name: jinja2
   version: "2.6"
+
+- name: pycrypto
+  version: latest
+
+- name: endpoints
+  version: "1.0"

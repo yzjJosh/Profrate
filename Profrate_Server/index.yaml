@@ -10,6 +10,25 @@ indexes:
 # automatically uploaded to the admin console when you next deploy
 # your application using appcfg.py.
 
+- kind: Comment
+  ancestor: yes
+  properties:
+  - name: target_id
+  - name: time
+    direction: desc
+
+- kind: Comment
+  ancestor: yes
+  properties:
+  - name: time
+    direction: desc
+
+- kind: CommentReply
+  properties:
+  - name: comment_id
+  - name: time
+    direction: desc
+
 - kind: Professor
   properties:
   - name: like_num
@@ -31,3 +50,9 @@ indexes:
   - name: like_num
     direction: desc
   - name: dislike_num
+
+- kind: Professor
+  ancestor: yes
+  properties:
+  - name: time
+    direction: desc

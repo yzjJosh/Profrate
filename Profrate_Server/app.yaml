@@ -13,7 +13,7 @@ handlers:
   login: admin
 
 - url: /_ah/spi/.*
-  script: Source.backend.API.APPLICATION
+  script: Source.backend.backend.APPLICATION
 
 - url: .*
   script: main.app

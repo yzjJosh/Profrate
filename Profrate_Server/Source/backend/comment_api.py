@@ -9,7 +9,7 @@ from Source.service.storage import Comment
 package = 'Profrate'
 
 
-class EditRequest(messages.Message):
+class CommentEditRequest(messages.Message):
     id = messages.IntegerField(1, required=True)
     content = messages.StringField(2, required=True)
 
@@ -25,6 +25,7 @@ class CommentMessage(messages.Message):
     disliked_by = messages.StringField(3, repeated=True)
     time = messages.IntegerField(4, required=True)
     author_email = messages.StringField(5, required=True)
+    id = messages.IntegerField(6, required=True)
 
 
 def createCommentMessage(comment):
@@ -33,7 +34,8 @@ def createCommentMessage(comment):
         liked_by=comment.liked_by,
         disliked_by=comment.disliked_by,
         time=int((comment.time - datetime.datetime.utcfromtimestamp(0)).total_seconds()*1000.0),
-        author_email=comment.author_email
+        author_email=comment.author_email,
+        id=comment.get_id()
     )
 
 
@@ -47,7 +49,7 @@ class MultiCommentResponse(messages.Message):
 
 @API.ProfrateAPI.api_class()
 class CommentAPI(remote.Service):
-    @endpoints.method(EditRequest, API.BooleanMessage, http_method='POST', name='comment_edit')
+    @endpoints.method(CommentEditRequest, API.BooleanMessage, http_method='POST', name='comment_edit')
     def comment_edit(self, request):
         user = endpoints.get_current_user()
         comment = Comment.get_Comment(request.id)
@@ -84,7 +86,7 @@ class CommentAPI(remote.Service):
     def comment_like(self, request):
         user = endpoints.get_current_user()
         comment = Comment.get_Comment(request.value)
-        if not (user and comment and user.email() == comment.author_email):
+        if not (user and comment):
             return API.BooleanMessage(value=False)
         comment.like(user.email())
         return API.BooleanMessage(value=True)
@@ -93,7 +95,7 @@ class CommentAPI(remote.Service):
     def comment_dislike(self, request):
         user = endpoints.get_current_user()
         comment = Comment.get_Comment(request.value)
-        if not (user and comment and user.email() == comment.author_email):
+        if not (user and comment):
             return API.BooleanMessage(value=False)
         comment.dislike(user.email())
         return API.BooleanMessage(value=True)

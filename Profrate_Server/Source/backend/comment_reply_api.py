@@ -8,22 +8,24 @@ from Source.service.storage import CommentReply
 package = 'Profrate'
 
 
-class EditRequest(messages.Message):
+class CommentReplyEditRequest(messages.Message):
     id = messages.IntegerField(1, required=True)
     content = messages.StringField(2, required=True)
 
 
 class CommentReplyMessage(messages.Message):
-    content = messages.StringField(1)
-    time = messages.IntegerField(2)
-    author_email = messages.StringField(3)
+    content = messages.StringField(1, required=True)
+    time = messages.IntegerField(2, required=True)
+    author_email = messages.StringField(3, required=True)
+    id = messages.IntegerField(4, required=True)
 
 
 def createCommentReplyMessage(comment_reply):
     return CommentReplyMessage(
         content=comment_reply.content,
         time=int((comment_reply.time - datetime.datetime.utcfromtimestamp(0)).total_seconds()*1000.0),
-        author_email=comment_reply.author_email
+        author_email=comment_reply.author_email,
+        id=comment_reply.get_id()
     )
 
 
@@ -37,7 +39,7 @@ class MultiCommentReplyResponse(messages.Message):
 
 @API.ProfrateAPI.api_class()
 class CommentReplyAPI(remote.Service):
-    @endpoints.method(EditRequest, API.BooleanMessage, http_method='POST', name='comment_reply_edit')
+    @endpoints.method(CommentReplyEditRequest, API.BooleanMessage, http_method='POST', name='comment_reply_edit')
     def comment_reply_edit(self, request):
         user = endpoints.get_current_user()
         reply = CommentReply.get_CommentReply(request.id)

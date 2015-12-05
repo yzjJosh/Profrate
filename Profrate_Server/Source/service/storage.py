@@ -120,6 +120,8 @@ class Article(ndb.Model):
         self.put()
 
     def like(self, user_email):
+        if user_email in self.liked_by:
+            return
         self.liked_by.append(user_email)
         self.like_num = len(self.liked_by)
         if user_email in self.disliked_by:
@@ -128,6 +130,8 @@ class Article(ndb.Model):
         self.put()
 
     def dislike(self, user_email):
+        if user_email in self.disliked_by:
+            return
         self.disliked_by.append(user_email)
         self.dislike_num = len(self.disliked_by)
         if user_email in self.liked_by:
@@ -250,3 +254,23 @@ class Professor(ndb.Model):
     def write_article(self, user_email, title, content):
         article = Article(parent=Article.parent_key(), target_id=self.get_id(), author_email=user_email, title=title, content=content)
         article.put()
+
+    def like(self, user_email):
+        if user_email in self.liked_by:
+            return
+        self.liked_by.append(user_email)
+        self.like_num = len(self.liked_by)
+        if user_email in self.disliked_by:
+            self.disliked_by.remove(user_email)
+            self.dislike_num = len(self.disliked_by)
+        self.put()
+
+    def dislike(self, user_email):
+        if user_email in self.disliked_by:
+            return
+        self.disliked_by.append(user_email)
+        self.dislike_num = len(self.disliked_by)
+        if user_email in self.liked_by:
+            self.liked_by.remove(user_email)
+            self.like_num = len(self.liked_by)
+        self.put()

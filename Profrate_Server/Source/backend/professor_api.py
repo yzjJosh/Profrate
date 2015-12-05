@@ -1,6 +1,7 @@
 import endpoints
 import API
 import comment_api
+import article_api
 from protorpc import remote
 from protorpc import messages
 from protorpc import message_types
@@ -20,6 +21,12 @@ class RateRequest(messages.Message):
     teaching_skill = messages.FloatField(3, default=-1.0)
     research_skill = messages.FloatField(4, default=-1.0)
     knowledge_level = messages.FloatField(5, default=-1.0)
+
+
+class WriteArtilceRequest(messages.Message):
+    id = messages.IntegerField(1, required=True)
+    title = messages.StringField(2, required=True)
+    content = messages.StringField(3, required=True)
 
 
 class RatingMessage(messages.Message):
@@ -55,6 +62,7 @@ class ProfessorMessage(messages.Message):
     overall_single_value_rating = messages.FloatField(14)
     liked_by = messages.StringField(15, repeated=True)
     disliked_by = messages.StringField(16, repeated=True)
+    id = messages.IntegerField(17, required=True)
 
 
 def createProfessorMessage(professor):
@@ -74,7 +82,8 @@ def createProfessorMessage(professor):
         overall_rating=createRatingMessage(professor.overallRating),
         overall_single_value_rating=professor.overallSingleValueRating,
         liked_by=professor.liked_by,
-        disliked_by=professor.disliked_by
+        disliked_by=professor.disliked_by,
+        id=professor.get_id()
     )
 
 
@@ -110,6 +119,33 @@ class ProfessorAPI(remote.Service):
                        request.research_skill, request.knowledge_level)
         return API.BooleanMessage(value=True)
 
+    @endpoints.method(WriteArtilceRequest, API.BooleanMessage, http_method='POST', name='professor_write_article')
+    def professor_write_article(self, request):
+        user = endpoints.get_current_user()
+        professor = Professor.get_professor(request.id)
+        if not(user and professor):
+            return API.BooleanMessage(value=False)
+        professor.write_article(user.email(), request.title, request.content)
+        return API.BooleanMessage(value=True)
+
+    @endpoints.method(API.IntegerMessage, API.BooleanMessage, http_method='POST', name='professor_like')
+    def professor_like(self, request):
+        user = endpoints.get_current_user()
+        professor = Professor.get_professor(request.value)
+        if not(user and professor):
+            return API.BooleanMessage(value=False)
+        professor.like(user.email())
+        return API.BooleanMessage(value=True)
+
+    @endpoints.method(API.IntegerMessage, API.BooleanMessage, http_method='POST', name='professor_dislike')
+    def professor_dislike(self, request):
+        user = endpoints.get_current_user()
+        professor = Professor.get_professor(request.value)
+        if not(user and professor):
+            return API.BooleanMessage(value=False)
+        professor.dislike(user.email())
+        return API.BooleanMessage(value=True)
+
     @endpoints.method(API.IntegerMessage, ProfessorResponse, http_method='GET', name='professor_get')
     def professor_get(self, request):
         professor = Professor.get_professor(request.value)
@@ -137,3 +173,11 @@ class ProfessorAPI(remote.Service):
         if not (professor and user):
             return RatingResponse()
         return RatingResponse(rating=createRatingMessage(professor.get_rating(user.email())))
+
+    @endpoints.method(API.IntegerMessage, article_api.MultiArticleResponse, http_method='GET', name='professor_get_articles')
+    def professor_get_articles(self, request):
+        professor = Professor.get_professor(request.value)
+        if not professor:
+            return article_api.MultiArticleResponse(articles=[])
+        articles = [article_api.createArticleMessage(article) for article in professor.get_articles()]
+        return article_api.MultiArticleResponse(articles=articles)

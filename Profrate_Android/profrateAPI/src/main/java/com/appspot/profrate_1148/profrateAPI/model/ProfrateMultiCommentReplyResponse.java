@@ -19,7 +19,7 @@
 package com.appspot.profrate_1148.profrateAPI.model;
 
 /**
- * Model definition for ProfrateRatingResponse.
+ * Model definition for ProfrateMultiCommentReplyResponse.
  *
  * <p> This is the Java data model class that specifies how to parse/serialize into the JSON that is
  * transmitted over HTTP when working with the profrateAPI. For a detailed explanation see:
@@ -29,37 +29,37 @@ package com.appspot.profrate_1148.profrateAPI.model;
  * @author Google, Inc.
  */
 @SuppressWarnings("javadoc")
-public final class ProfrateRatingResponse extends com.google.api.client.json.GenericJson {
+public final class ProfrateMultiCommentReplyResponse extends com.google.api.client.json.GenericJson {
 
   /**
    * The value may be {@code null}.
    */
-  @com.google.api.client.util.Key
-  private ProfrateRatingMessage rating;
+  @com.google.api.client.util.Key("comment_replies")
+  private java.util.List<ProfrateCommentReplyMessage> commentReplies;
 
   /**
    * @return value or {@code null} for none
    */
-  public ProfrateRatingMessage getRating() {
-    return rating;
+  public java.util.List<ProfrateCommentReplyMessage> getCommentReplies() {
+    return commentReplies;
   }
 
   /**
-   * @param rating rating or {@code null} for none
+   * @param commentReplies commentReplies or {@code null} for none
    */
-  public ProfrateRatingResponse setRating(ProfrateRatingMessage rating) {
-    this.rating = rating;
+  public ProfrateMultiCommentReplyResponse setCommentReplies(java.util.List<ProfrateCommentReplyMessage> commentReplies) {
+    this.commentReplies = commentReplies;
     return this;
   }
 
   @Override
-  public ProfrateRatingResponse set(String fieldName, Object value) {
-    return (ProfrateRatingResponse) super.set(fieldName, value);
+  public ProfrateMultiCommentReplyResponse set(String fieldName, Object value) {
+    return (ProfrateMultiCommentReplyResponse) super.set(fieldName, value);
   }
 
   @Override
-  public ProfrateRatingResponse clone() {
-    return (ProfrateRatingResponse) super.clone();
+  public ProfrateMultiCommentReplyResponse clone() {
+    return (ProfrateMultiCommentReplyResponse) super.clone();
   }
 
 }

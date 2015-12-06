@@ -4,11 +4,14 @@ import android.support.annotation.Nullable;
 
 import com.appspot.profrate_1148.profrateAPI.ProfrateAPI;
 import com.appspot.profrate_1148.profrateAPI.model.ProfrateArticleMessage;
+import com.appspot.profrate_1148.profrateAPI.model.ProfrateCommentEditRequest;
 import com.appspot.profrate_1148.profrateAPI.model.ProfrateCommentMessage;
+import com.appspot.profrate_1148.profrateAPI.model.ProfrateCommentReplyMessage;
 import com.appspot.profrate_1148.profrateAPI.model.ProfrateProfessorCommentRequest;
 import com.appspot.profrate_1148.profrateAPI.model.ProfrateProfessorMessage;
 import com.appspot.profrate_1148.profrateAPI.model.ProfrateRateRequest;
 import com.appspot.profrate_1148.profrateAPI.model.ProfrateRatingMessage;
+import com.appspot.profrate_1148.profrateAPI.model.ProfrateReplyRequest;
 import com.appspot.profrate_1148.profrateAPI.model.ProfrateWriteArtilceRequest;
 import com.appspot.profrate_1148.profrateAPI.model.SourceBackendAPIIntegerMessage;
 import com.google.api.client.extensions.android.http.AndroidHttp;
@@ -85,7 +88,7 @@ public class BackendAPI {
         return ret;
     }
 
-    public static List<Comment> professor_get_comments(long prof_id) throws IOException{
+    static List<Comment> professor_get_comments(long prof_id) throws IOException{
         List<Comment> ret = new ArrayList<Comment>();
         List<ProfrateCommentMessage> comments = buildAPI(null).professorGetComments(prof_id).execute().getComments();
         if(comments != null)
@@ -106,6 +109,57 @@ public class BackendAPI {
             for(ProfrateArticleMessage article: articles)
                 ret.add(new Article(article));
         return ret;
+    }
+
+    static boolean comment_edit(long comment_id, String content, GoogleAccountCredential credential) throws IOException{
+        if(credential == null) return false;
+        ProfrateCommentEditRequest request = new ProfrateCommentEditRequest();
+        request.setId(comment_id);
+        request.setContent(content);
+        return buildAPI(credential).commentEdit(request).execute().getValue();
+    }
+
+    static boolean comment_delete(long comment_id, GoogleAccountCredential credential) throws IOException{
+        if(credential == null) return false;
+        SourceBackendAPIIntegerMessage request = new SourceBackendAPIIntegerMessage();
+        request.setValue(comment_id);
+        return buildAPI(credential).commentDelete(request).execute().getValue();
+    }
+
+    static Comment comment_get(long comment_id) throws IOException{
+        ProfrateCommentMessage comment = buildAPI(null).commentGet(comment_id).execute().getComment();
+        return comment==null? null: new Comment(comment);
+    }
+
+    static List<CommentReply> comment_get_replies(long comment_id) throws IOException{
+        List<CommentReply> ret = new ArrayList<CommentReply>();
+        List<ProfrateCommentReplyMessage> repies = buildAPI(null).commentGetReplies(comment_id).execute().getCommentReplies();
+        if(repies != null)
+            for(ProfrateCommentReplyMessage reply: repies)
+                ret.add(new CommentReply(reply));
+        return ret;
+    }
+
+    static boolean comment_like(long comment_id, GoogleAccountCredential credential) throws IOException{
+        if(credential == null) return false;
+        SourceBackendAPIIntegerMessage request = new SourceBackendAPIIntegerMessage();
+        request.setValue(comment_id);
+        return buildAPI(credential).commentLike(request).execute().getValue();
+    }
+
+    static boolean comment_dislike(long comment_id, GoogleAccountCredential credential) throws IOException{
+        if(credential == null) return false;
+        SourceBackendAPIIntegerMessage request = new SourceBackendAPIIntegerMessage();
+        request.setValue(comment_id);
+        return buildAPI(credential).commentDislike(request).execute().getValue();
+    }
+
+    static boolean comment_reply(long comment_id, String content, GoogleAccountCredential credential) throws IOException{
+        if(credential == null) return false;
+        ProfrateReplyRequest request = new ProfrateReplyRequest();
+        request.setId(comment_id);
+        request.setContent(content);
+        return buildAPI(credential).commentReply(request).execute().getValue();
     }
 
 }

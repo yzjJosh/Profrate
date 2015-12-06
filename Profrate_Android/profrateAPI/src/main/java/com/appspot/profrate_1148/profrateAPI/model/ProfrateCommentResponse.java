@@ -19,7 +19,7 @@
 package com.appspot.profrate_1148.profrateAPI.model;
 
 /**
- * Model definition for ProfrateRatingResponse.
+ * Model definition for ProfrateCommentResponse.
  *
  * <p> This is the Java data model class that specifies how to parse/serialize into the JSON that is
  * transmitted over HTTP when working with the profrateAPI. For a detailed explanation see:
@@ -29,37 +29,37 @@ package com.appspot.profrate_1148.profrateAPI.model;
  * @author Google, Inc.
  */
 @SuppressWarnings("javadoc")
-public final class ProfrateRatingResponse extends com.google.api.client.json.GenericJson {
+public final class ProfrateCommentResponse extends com.google.api.client.json.GenericJson {
 
   /**
    * The value may be {@code null}.
    */
   @com.google.api.client.util.Key
-  private ProfrateRatingMessage rating;
+  private ProfrateCommentMessage comment;
 
   /**
    * @return value or {@code null} for none
    */
-  public ProfrateRatingMessage getRating() {
-    return rating;
+  public ProfrateCommentMessage getComment() {
+    return comment;
   }
 
   /**
-   * @param rating rating or {@code null} for none
+   * @param comment comment or {@code null} for none
    */
-  public ProfrateRatingResponse setRating(ProfrateRatingMessage rating) {
-    this.rating = rating;
+  public ProfrateCommentResponse setComment(ProfrateCommentMessage comment) {
+    this.comment = comment;
     return this;
   }
 
   @Override
-  public ProfrateRatingResponse set(String fieldName, Object value) {
-    return (ProfrateRatingResponse) super.set(fieldName, value);
+  public ProfrateCommentResponse set(String fieldName, Object value) {
+    return (ProfrateCommentResponse) super.set(fieldName, value);
   }
 
   @Override
-  public ProfrateRatingResponse clone() {
-    return (ProfrateRatingResponse) super.clone();
+  public ProfrateCommentResponse clone() {
+    return (ProfrateCommentResponse) super.clone();
   }
 
 }

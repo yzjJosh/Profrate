@@ -19,7 +19,7 @@
 package com.appspot.profrate_1148.profrateAPI.model;
 
 /**
- * Model definition for ProfrateWriteArtilceRequest.
+ * Model definition for ProfrateArticleEditRequest.
  *
  * <p> This is the Java data model class that specifies how to parse/serialize into the JSON that is
  * transmitted over HTTP when working with the profrateAPI. For a detailed explanation see:
@@ -29,7 +29,7 @@ package com.appspot.profrate_1148.profrateAPI.model;
  * @author Google, Inc.
  */
 @SuppressWarnings("javadoc")
-public final class ProfrateWriteArtilceRequest extends com.google.api.client.json.GenericJson {
+public final class ProfrateArticleEditRequest extends com.google.api.client.json.GenericJson {
 
   /**
    * The value may be {@code null}.
@@ -59,7 +59,7 @@ public final class ProfrateWriteArtilceRequest extends com.google.api.client.jso
   /**
    * @param content content or {@code null} for none
    */
-  public ProfrateWriteArtilceRequest setContent(java.lang.String content) {
+  public ProfrateArticleEditRequest setContent(java.lang.String content) {
     this.content = content;
     return this;
   }
@@ -74,7 +74,7 @@ public final class ProfrateWriteArtilceRequest extends com.google.api.client.jso
   /**
    * @param id id or {@code null} for none
    */
-  public ProfrateWriteArtilceRequest setId(java.lang.Long id) {
+  public ProfrateArticleEditRequest setId(java.lang.Long id) {
     this.id = id;
     return this;
   }
@@ -89,19 +89,19 @@ public final class ProfrateWriteArtilceRequest extends com.google.api.client.jso
   /**
    * @param title title or {@code null} for none
    */
-  public ProfrateWriteArtilceRequest setTitle(java.lang.String title) {
+  public ProfrateArticleEditRequest setTitle(java.lang.String title) {
     this.title = title;
     return this;
   }
 
   @Override
-  public ProfrateWriteArtilceRequest set(String fieldName, Object value) {
-    return (ProfrateWriteArtilceRequest) super.set(fieldName, value);
+  public ProfrateArticleEditRequest set(String fieldName, Object value) {
+    return (ProfrateArticleEditRequest) super.set(fieldName, value);
   }
 
   @Override
-  public ProfrateWriteArtilceRequest clone() {
-    return (ProfrateWriteArtilceRequest) super.clone();
+  public ProfrateArticleEditRequest clone() {
+    return (ProfrateArticleEditRequest) super.clone();
   }
 
 }

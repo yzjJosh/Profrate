@@ -19,7 +19,7 @@
 package com.appspot.profrate_1148.profrateAPI.model;
 
 /**
- * Model definition for ProfrateRatingResponse.
+ * Model definition for ProfrateCommentReplyResponse.
  *
  * <p> This is the Java data model class that specifies how to parse/serialize into the JSON that is
  * transmitted over HTTP when working with the profrateAPI. For a detailed explanation see:
@@ -29,37 +29,37 @@ package com.appspot.profrate_1148.profrateAPI.model;
  * @author Google, Inc.
  */
 @SuppressWarnings("javadoc")
-public final class ProfrateRatingResponse extends com.google.api.client.json.GenericJson {
+public final class ProfrateCommentReplyResponse extends com.google.api.client.json.GenericJson {
 
   /**
    * The value may be {@code null}.
    */
-  @com.google.api.client.util.Key
-  private ProfrateRatingMessage rating;
+  @com.google.api.client.util.Key("comment_reply")
+  private ProfrateCommentReplyMessage commentReply;
 
   /**
    * @return value or {@code null} for none
    */
-  public ProfrateRatingMessage getRating() {
-    return rating;
+  public ProfrateCommentReplyMessage getCommentReply() {
+    return commentReply;
   }
 
   /**
-   * @param rating rating or {@code null} for none
+   * @param commentReply commentReply or {@code null} for none
    */
-  public ProfrateRatingResponse setRating(ProfrateRatingMessage rating) {
-    this.rating = rating;
+  public ProfrateCommentReplyResponse setCommentReply(ProfrateCommentReplyMessage commentReply) {
+    this.commentReply = commentReply;
     return this;
   }
 
   @Override
-  public ProfrateRatingResponse set(String fieldName, Object value) {
-    return (ProfrateRatingResponse) super.set(fieldName, value);
+  public ProfrateCommentReplyResponse set(String fieldName, Object value) {
+    return (ProfrateCommentReplyResponse) super.set(fieldName, value);
   }
 
   @Override
-  public ProfrateRatingResponse clone() {
-    return (ProfrateRatingResponse) super.clone();
+  public ProfrateCommentReplyResponse clone() {
+    return (ProfrateCommentReplyResponse) super.clone();
   }
 
 }

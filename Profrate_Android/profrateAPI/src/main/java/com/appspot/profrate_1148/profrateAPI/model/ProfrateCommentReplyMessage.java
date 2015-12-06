@@ -19,7 +19,7 @@
 package com.appspot.profrate_1148.profrateAPI.model;
 
 /**
- * Model definition for ProfrateWriteArtilceRequest.
+ * Model definition for ProfrateCommentReplyMessage.
  *
  * <p> This is the Java data model class that specifies how to parse/serialize into the JSON that is
  * transmitted over HTTP when working with the profrateAPI. For a detailed explanation see:
@@ -29,7 +29,13 @@ package com.appspot.profrate_1148.profrateAPI.model;
  * @author Google, Inc.
  */
 @SuppressWarnings("javadoc")
-public final class ProfrateWriteArtilceRequest extends com.google.api.client.json.GenericJson {
+public final class ProfrateCommentReplyMessage extends com.google.api.client.json.GenericJson {
+
+  /**
+   * The value may be {@code null}.
+   */
+  @com.google.api.client.util.Key("author_email")
+  private java.lang.String authorEmail;
 
   /**
    * The value may be {@code null}.
@@ -46,8 +52,23 @@ public final class ProfrateWriteArtilceRequest extends com.google.api.client.jso
   /**
    * The value may be {@code null}.
    */
-  @com.google.api.client.util.Key
-  private java.lang.String title;
+  @com.google.api.client.util.Key @com.google.api.client.json.JsonString
+  private java.lang.Long time;
+
+  /**
+   * @return value or {@code null} for none
+   */
+  public java.lang.String getAuthorEmail() {
+    return authorEmail;
+  }
+
+  /**
+   * @param authorEmail authorEmail or {@code null} for none
+   */
+  public ProfrateCommentReplyMessage setAuthorEmail(java.lang.String authorEmail) {
+    this.authorEmail = authorEmail;
+    return this;
+  }
 
   /**
    * @return value or {@code null} for none
@@ -59,7 +80,7 @@ public final class ProfrateWriteArtilceRequest extends com.google.api.client.jso
   /**
    * @param content content or {@code null} for none
    */
-  public ProfrateWriteArtilceRequest setContent(java.lang.String content) {
+  public ProfrateCommentReplyMessage setContent(java.lang.String content) {
     this.content = content;
     return this;
   }
@@ -74,7 +95,7 @@ public final class ProfrateWriteArtilceRequest extends com.google.api.client.jso
   /**
    * @param id id or {@code null} for none
    */
-  public ProfrateWriteArtilceRequest setId(java.lang.Long id) {
+  public ProfrateCommentReplyMessage setId(java.lang.Long id) {
     this.id = id;
     return this;
   }
@@ -82,26 +103,26 @@ public final class ProfrateWriteArtilceRequest extends com.google.api.client.jso
   /**
    * @return value or {@code null} for none
    */
-  public java.lang.String getTitle() {
-    return title;
+  public java.lang.Long getTime() {
+    return time;
   }
 
   /**
-   * @param title title or {@code null} for none
+   * @param time time or {@code null} for none
    */
-  public ProfrateWriteArtilceRequest setTitle(java.lang.String title) {
-    this.title = title;
+  public ProfrateCommentReplyMessage setTime(java.lang.Long time) {
+    this.time = time;
     return this;
   }
 
   @Override
-  public ProfrateWriteArtilceRequest set(String fieldName, Object value) {
-    return (ProfrateWriteArtilceRequest) super.set(fieldName, value);
+  public ProfrateCommentReplyMessage set(String fieldName, Object value) {
+    return (ProfrateCommentReplyMessage) super.set(fieldName, value);
   }
 
   @Override
-  public ProfrateWriteArtilceRequest clone() {
-    return (ProfrateWriteArtilceRequest) super.clone();
+  public ProfrateCommentReplyMessage clone() {
+    return (ProfrateCommentReplyMessage) super.clone();
   }
 
 }

@@ -19,7 +19,7 @@
 package com.appspot.profrate_1148.profrateAPI.model;
 
 /**
- * Model definition for ProfrateWriteArtilceRequest.
+ * Model definition for ProfrateCommentReplyEditRequest.
  *
  * <p> This is the Java data model class that specifies how to parse/serialize into the JSON that is
  * transmitted over HTTP when working with the profrateAPI. For a detailed explanation see:
@@ -29,7 +29,7 @@ package com.appspot.profrate_1148.profrateAPI.model;
  * @author Google, Inc.
  */
 @SuppressWarnings("javadoc")
-public final class ProfrateWriteArtilceRequest extends com.google.api.client.json.GenericJson {
+public final class ProfrateCommentReplyEditRequest extends com.google.api.client.json.GenericJson {
 
   /**
    * The value may be {@code null}.
@@ -44,12 +44,6 @@ public final class ProfrateWriteArtilceRequest extends com.google.api.client.jso
   private java.lang.Long id;
 
   /**
-   * The value may be {@code null}.
-   */
-  @com.google.api.client.util.Key
-  private java.lang.String title;
-
-  /**
    * @return value or {@code null} for none
    */
   public java.lang.String getContent() {
@@ -59,7 +53,7 @@ public final class ProfrateWriteArtilceRequest extends com.google.api.client.jso
   /**
    * @param content content or {@code null} for none
    */
-  public ProfrateWriteArtilceRequest setContent(java.lang.String content) {
+  public ProfrateCommentReplyEditRequest setContent(java.lang.String content) {
     this.content = content;
     return this;
   }
@@ -74,34 +68,19 @@ public final class ProfrateWriteArtilceRequest extends com.google.api.client.jso
   /**
    * @param id id or {@code null} for none
    */
-  public ProfrateWriteArtilceRequest setId(java.lang.Long id) {
+  public ProfrateCommentReplyEditRequest setId(java.lang.Long id) {
     this.id = id;
     return this;
   }
 
-  /**
-   * @return value or {@code null} for none
-   */
-  public java.lang.String getTitle() {
-    return title;
-  }
-
-  /**
-   * @param title title or {@code null} for none
-   */
-  public ProfrateWriteArtilceRequest setTitle(java.lang.String title) {
-    this.title = title;
-    return this;
+  @Override
+  public ProfrateCommentReplyEditRequest set(String fieldName, Object value) {
+    return (ProfrateCommentReplyEditRequest) super.set(fieldName, value);
   }
 
   @Override
-  public ProfrateWriteArtilceRequest set(String fieldName, Object value) {
-    return (ProfrateWriteArtilceRequest) super.set(fieldName, value);
-  }
-
-  @Override
-  public ProfrateWriteArtilceRequest clone() {
-    return (ProfrateWriteArtilceRequest) super.clone();
+  public ProfrateCommentReplyEditRequest clone() {
+    return (ProfrateCommentReplyEditRequest) super.clone();
   }
 
 }

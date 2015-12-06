@@ -10,7 +10,7 @@ from Source.service.storage import Professor
 package = 'Profrate'
 
 
-class CommentRequest(messages.Message):
+class ProfessorCommentRequest(messages.Message):
     id = messages.IntegerField(1, required=True)
     content = messages.StringField(2, required=True)
 
@@ -59,10 +59,9 @@ class ProfessorMessage(messages.Message):
     email = messages.StringField(11)
     personal_website = messages.StringField(12)
     overall_rating = messages.MessageField(RatingMessage, 13)
-    overall_single_value_rating = messages.FloatField(14)
-    liked_by = messages.StringField(15, repeated=True)
-    disliked_by = messages.StringField(16, repeated=True)
-    id = messages.IntegerField(17, required=True)
+    liked_by = messages.StringField(14, repeated=True)
+    disliked_by = messages.StringField(15, repeated=True)
+    id = messages.IntegerField(16, required=True)
 
 
 def createProfessorMessage(professor):
@@ -80,7 +79,6 @@ def createProfessorMessage(professor):
         email=professor.email,
         personal_website=professor.personal_website,
         overall_rating=createRatingMessage(professor.overallRating),
-        overall_single_value_rating=professor.overallSingleValueRating,
         liked_by=professor.liked_by,
         disliked_by=professor.disliked_by,
         id=professor.get_id()
@@ -100,7 +98,7 @@ class RatingResponse(messages.Message):
 
 @API.ProfrateAPI.api_class()
 class ProfessorAPI(remote.Service):
-    @endpoints.method(CommentRequest, API.BooleanMessage, http_method='POST', name='professor_comment')
+    @endpoints.method(ProfessorCommentRequest, API.BooleanMessage, http_method='POST', name='professor_comment')
     def professor_comment(self, request):
         user = endpoints.get_current_user()
         professor = Professor.get_professor(request.id)
@@ -172,7 +170,10 @@ class ProfessorAPI(remote.Service):
         professor = Professor.get_professor(request.value)
         if not (professor and user):
             return RatingResponse()
-        return RatingResponse(rating=createRatingMessage(professor.get_rating(user.email())))
+        rating = professor.get_rating(user.email())
+        if not rating:
+            return RatingResponse()
+        return RatingResponse(rating=createRatingMessage(rating))
 
     @endpoints.method(API.IntegerMessage, article_api.MultiArticleResponse, http_method='GET', name='professor_get_articles')
     def professor_get_articles(self, request):

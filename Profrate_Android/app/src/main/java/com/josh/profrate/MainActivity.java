@@ -19,11 +19,10 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.josh.profrate.elements.Credential;
-import com.josh.profrate.elements.Professor;
+import com.josh.profrate.dataStructures.Professor;
 import com.josh.profrate.viewContents.ViewContent;
 import com.josh.profrate.viewContents.ViewProfessors;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;

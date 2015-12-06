@@ -274,3 +274,4 @@ class Professor(ndb.Model):
             self.liked_by.remove(user_email)
             self.like_num = len(self.liked_by)
         self.put()
+

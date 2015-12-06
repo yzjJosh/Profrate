@@ -12,7 +12,7 @@ import android.widget.RelativeLayout.LayoutParams;
 
 import com.josh.profrate.R;
 import com.josh.profrate.SecondaryActivity;
-import com.josh.profrate.elements.Professor;
+import com.josh.profrate.dataStructures.Professor;
 
 import java.util.List;
 

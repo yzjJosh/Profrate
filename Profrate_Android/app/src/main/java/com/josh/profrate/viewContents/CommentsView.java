@@ -10,7 +10,7 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 
 import com.josh.profrate.R;
-import com.josh.profrate.elements.Comment;
+import com.josh.profrate.dataStructures.Comment;
 
 import java.util.List;
 

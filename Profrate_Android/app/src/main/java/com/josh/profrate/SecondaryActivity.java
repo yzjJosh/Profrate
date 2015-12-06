@@ -10,8 +10,8 @@ import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import com.josh.profrate.elements.Comment;
-import com.josh.profrate.elements.Professor;
+import com.josh.profrate.dataStructures.Comment;
+import com.josh.profrate.dataStructures.Professor;
 import com.josh.profrate.viewContents.CommentsView;
 import com.josh.profrate.viewContents.ViewContent;
 import com.josh.profrate.viewContents.ViewOneProsessor;
@@ -150,7 +150,7 @@ public class SecondaryActivity extends Activity {
                         activity.content = new ViewProfessors(activity, activity.content_layout, new ArrayList<Professor>());
                         break;
                     case PROFESSOR_DETAIL:
-                        activity.content = new ViewOneProsessor(activity, activity.content_layout, new Professor());
+                        activity.content = new ViewOneProsessor(activity, activity.content_layout, null);
                         break;
                     case COMMENTS:
                         activity.content = new CommentsView(activity, activity.content_layout, new ArrayList<Comment>());

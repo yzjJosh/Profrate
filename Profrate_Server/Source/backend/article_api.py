@@ -9,7 +9,7 @@ from Source.service.storage import Article
 package = 'Profrate'
 
 
-class CommentRequest(messages.Message):
+class ArticleCommentRequest(messages.Message):
     id = messages.IntegerField(1, required=True)
     content = messages.StringField(2, required=True)
 
@@ -52,7 +52,7 @@ class MultiArticleResponse(messages.Message):
 
 @API.ProfrateAPI.api_class()
 class ArticleAPI(remote.Service):
-    @endpoints.method(CommentRequest, API.BooleanMessage, http_method='POST', name='article_comment')
+    @endpoints.method(ArticleCommentRequest, API.BooleanMessage, http_method='POST', name='article_comment')
     def article_comment(self, request):
         user = endpoints.get_current_user()
         article = Article.get_article(request.id)

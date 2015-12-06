@@ -3,7 +3,7 @@ package com.josh.profrate.viewContents;
 import android.content.Context;
 import android.view.ViewGroup;
 
-import com.josh.profrate.elements.Professor;
+import com.josh.profrate.dataStructures.Professor;
 
 public class ViewOneProsessor extends ViewContent {
 

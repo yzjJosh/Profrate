@@ -15,8 +15,10 @@ import com.appspot.profrate_1148.profrateAPI.model.ProfrateProfessorMessage;
 import com.appspot.profrate_1148.profrateAPI.model.ProfrateRateRequest;
 import com.appspot.profrate_1148.profrateAPI.model.ProfrateRatingMessage;
 import com.appspot.profrate_1148.profrateAPI.model.ProfrateReplyRequest;
+import com.appspot.profrate_1148.profrateAPI.model.ProfrateUserMessage;
 import com.appspot.profrate_1148.profrateAPI.model.ProfrateWriteArtilceRequest;
 import com.appspot.profrate_1148.profrateAPI.model.SourceBackendAPIIntegerMessage;
+import com.appspot.profrate_1148.profrateAPI.model.SourceBackendAPIStringMessage;
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.extensions.android.json.AndroidJsonFactory;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
@@ -235,6 +237,25 @@ public class BackendAPI {
             for(ProfrateCommentMessage comment: comments)
                 ret.add(new Comment(comment));
         return ret;
+    }
+
+    static User user_get(String email) throws IOException{
+        ProfrateUserMessage user = buildAPI(null).userGet(email).execute().getUser();
+        return user==null? null: new User(user);
+    }
+
+    static boolean user_create(String name, GoogleAccountCredential credential) throws IOException{
+        if(credential == null) return false;
+        SourceBackendAPIStringMessage request = new SourceBackendAPIStringMessage();
+        request.setValue(name);
+        return buildAPI(credential).userCreate(request).execute().getValue();
+    }
+
+    static boolean user_edit_name(String name, GoogleAccountCredential credential) throws IOException{
+        if(credential == null) return false;
+        SourceBackendAPIStringMessage request = new SourceBackendAPIStringMessage();
+        request.setValue(name);
+        return buildAPI(credential).userEditName(request).execute().getValue();
     }
 
 }

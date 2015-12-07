@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class SecondaryActivity extends Activity {
 
@@ -157,14 +158,28 @@ public class SecondaryActivity extends Activity {
                         data.put("professor", professor);
                         data.put("comments", professor.getComments());
                         data.put("articles", professor.getArticles());
+                        Map<String, User> users = new HashMap<String, User>();
                         Map<Long, List<CommentReply>> commentReplies = new HashMap<Long, List<CommentReply>>();
-                        for(Comment comment: (List<Comment>) data.get("comments"))
+                        for(Comment comment: (List<Comment>) data.get("comments")) {
                             commentReplies.put(comment.id, comment.getReplies());
+                            if(!users.containsKey(comment.author_email))
+                                users.put(comment.author_email, User.getUser(comment.author_email));
+                            for(CommentReply reply: commentReplies.get(comment.id))
+                                if(!users.containsKey(reply.author_email))
+                                    users.put(reply.author_email, User.getUser(reply.author_email));
+                        }
                         data.put("commentReplies", commentReplies);
                         Map<Long, List<Comment>> articleComments = new HashMap<Long, List<Comment>>();
-                        for(Article article: (List<Article>) data.get("articles"))
+                        for(Article article: (List<Article>) data.get("articles")) {
                             articleComments.put(article.id, article.getComments());
+                            if(!users.containsKey(article.author_email))
+                                users.put(article.author_email, User.getUser(article.author_email));
+                            for(Comment comment: articleComments.get(article.id))
+                                if(!users.containsKey(comment.author_email))
+                                    users.put(comment.author_email, User.getUser(comment.author_email));
+                        }
                         data.put("articleComments", articleComments);
+                        data.put("users", users);
                         break;
                     default:
                         break;
@@ -205,7 +220,7 @@ public class SecondaryActivity extends Activity {
                     case COMMENTS_AND_ARTICLES:
                         activity.content = new CommentsAndArticlesView(activity, activity.content_layout, (Professor) data.get("professor"),
                                 (List<Comment>) data.get("comments"), (List<Article>) data.get("articles"), (Map<Long, List<CommentReply>>)data.get("commentReplies"),
-                                (Map<Long, List<Comment>>)data.get("articleComments"), new HashSet<User>());
+                                (Map<Long, List<Comment>>)data.get("articleComments"), (Map<String, User>)data.get("users"));
                         break;
                     case SINGLE_COMMENT:
                         break;

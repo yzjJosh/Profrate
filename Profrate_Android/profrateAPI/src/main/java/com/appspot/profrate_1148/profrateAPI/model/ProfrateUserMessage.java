@@ -19,7 +19,7 @@
 package com.appspot.profrate_1148.profrateAPI.model;
 
 /**
- * Model definition for ProfrateCommentReplyResponse.
+ * Model definition for ProfrateUserMessage.
  *
  * <p> This is the Java data model class that specifies how to parse/serialize into the JSON that is
  * transmitted over HTTP when working with the profrateAPI. For a detailed explanation see:
@@ -29,37 +29,79 @@ package com.appspot.profrate_1148.profrateAPI.model;
  * @author Google, Inc.
  */
 @SuppressWarnings("javadoc")
-public final class ProfrateCommentReplyResponse extends com.google.api.client.json.GenericJson {
+public final class ProfrateUserMessage extends com.google.api.client.json.GenericJson {
 
   /**
    * The value may be {@code null}.
    */
-  @com.google.api.client.util.Key("comment_reply")
-  private ProfrateCommentReplyMessage commentReply;
+  @com.google.api.client.util.Key
+  private java.lang.String email;
+
+  /**
+   * The value may be {@code null}.
+   */
+  @com.google.api.client.util.Key
+  private java.lang.String name;
+
+  /**
+   * The value may be {@code null}.
+   */
+  @com.google.api.client.util.Key
+  private java.lang.String photo;
 
   /**
    * @return value or {@code null} for none
    */
-  public ProfrateCommentReplyMessage getCommentReply() {
-    return commentReply;
+  public java.lang.String getEmail() {
+    return email;
   }
 
   /**
-   * @param commentReply commentReply or {@code null} for none
+   * @param email email or {@code null} for none
    */
-  public ProfrateCommentReplyResponse setCommentReply(ProfrateCommentReplyMessage commentReply) {
-    this.commentReply = commentReply;
+  public ProfrateUserMessage setEmail(java.lang.String email) {
+    this.email = email;
+    return this;
+  }
+
+  /**
+   * @return value or {@code null} for none
+   */
+  public java.lang.String getName() {
+    return name;
+  }
+
+  /**
+   * @param name name or {@code null} for none
+   */
+  public ProfrateUserMessage setName(java.lang.String name) {
+    this.name = name;
+    return this;
+  }
+
+  /**
+   * @return value or {@code null} for none
+   */
+  public java.lang.String getPhoto() {
+    return photo;
+  }
+
+  /**
+   * @param photo photo or {@code null} for none
+   */
+  public ProfrateUserMessage setPhoto(java.lang.String photo) {
+    this.photo = photo;
     return this;
   }
 
   @Override
-  public ProfrateCommentReplyResponse set(String fieldName, Object value) {
-    return (ProfrateCommentReplyResponse) super.set(fieldName, value);
+  public ProfrateUserMessage set(String fieldName, Object value) {
+    return (ProfrateUserMessage) super.set(fieldName, value);
   }
 
   @Override
-  public ProfrateCommentReplyResponse clone() {
-    return (ProfrateCommentReplyResponse) super.clone();
+  public ProfrateUserMessage clone() {
+    return (ProfrateUserMessage) super.clone();
   }
 
 }

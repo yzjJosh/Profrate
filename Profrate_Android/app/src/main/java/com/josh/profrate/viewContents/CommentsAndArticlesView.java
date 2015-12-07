@@ -21,6 +21,7 @@ import com.josh.profrate.dataStructures.Comment;
 import com.josh.profrate.dataStructures.CommentReply;
 import com.josh.profrate.dataStructures.Professor;
 import com.josh.profrate.dataStructures.User;
+import com.josh.profrate.elements.BitmapFetcher;
 import com.josh.profrate.elements.Credential;
 import com.josh.profrate.elements.TimeConverter;
 
@@ -31,7 +32,6 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 public class CommentsAndArticlesView extends ViewContent {
 
@@ -43,8 +43,7 @@ public class CommentsAndArticlesView extends ViewContent {
     private final List<Object> items;
     private final Map<Long, List<CommentReply>> commentReplies;
     private final Map<Long, List<Comment>> articleComments;
-    private final Set<User> userSet;
-    private final boolean[] isLoadingPhoto;
+    private final Map<String, User> users;
     private final boolean[] isTogglingLikeness;
     private final TaskHandler handler;
     private boolean isActive;
@@ -73,18 +72,17 @@ public class CommentsAndArticlesView extends ViewContent {
 
     public CommentsAndArticlesView(Context context, ViewGroup parentLayout, Professor professor,
                                    List<Comment> comments, List<Article> articles, Map<Long, List<CommentReply>> commentReplies,
-                                   Map<Long, List<Comment>> articleComments, Set<User> userSet) {
+                                   Map<Long, List<Comment>> articleComments, Map<String, User> users) {
         super(context, parentLayout);
         this.professor = professor;
         this.items = new ArrayList<Object>();
         this.handler = new TaskHandler(this);
         this.commentReplies = commentReplies;
         this.articleComments = articleComments;
-        this.userSet = userSet;
+        this.users = users;
         items.addAll(comments);
         items.addAll(articles);
         Collections.sort(items, comparator);
-        this.isLoadingPhoto = new boolean[items.size()];
         this.isTogglingLikeness = new boolean[items.size()];
         this.isActive = false;
     }
@@ -164,6 +162,8 @@ public class CommentsAndArticlesView extends ViewContent {
         public final static int MAX_REPLY_NUM = 3;
 
         public ImageView user_photo;
+        public View user_photo_progress_bar;
+        public View user_photo_area;
         public TextView user_name;
         public TextView title;
         public TextView content;
@@ -231,6 +231,8 @@ public class CommentsAndArticlesView extends ViewContent {
                 }
                 holder.user_name = (TextView) convertView.findViewById(R.id.user_name);
                 holder.user_photo = (ImageView) convertView.findViewById(R.id.user_photo);
+                holder.user_photo_progress_bar = convertView.findViewById(R.id.user_photo_progress_bar);
+                holder.user_photo_area = convertView.findViewById(R.id.user_photo_area);
                 holder.comment_btn = convertView.findViewById(R.id.comment_btn);
                 holder.like_btn = convertView.findViewById(R.id.like_btn);
                 holder.dislike_btn = convertView.findViewById(R.id.dislike_btn);
@@ -248,8 +250,11 @@ public class CommentsAndArticlesView extends ViewContent {
                 convertView.setTag(holder);
             }else
                 holder = (ViewHolder)convertView.getTag();
+            holder.position = position;
             if(type == 0){
                 Comment comment = (Comment) getItem(position);
+                User author = users.get(comment.author_email);
+                holder.user_name.setText(author.name);
                 holder.content.setText(comment.content);
                 holder.time.setText(TimeConverter.convertTime(comment.time));
                 holder.like_num.setText(comment.liked_by.size() + "");
@@ -263,19 +268,33 @@ public class CommentsAndArticlesView extends ViewContent {
                     holder.dislike_icon.setImageResource(R.drawable.dislike_colored);
                 else
                     holder.dislike_icon.setImageResource(R.drawable.dislike_bw);
+                holder.user_photo.setImageBitmap(null);
+                holder.user_photo.setVisibility(View.GONE);
+                holder.user_photo_progress_bar.setVisibility(View.VISIBLE);
+                new LoadPhotoThread(author.photo_url, holder.user_photo_area, holder).start();
                 holder.reply_list.removeAllViews();
                 List<CommentReply> replies = commentReplies.get(comment.id);
                 int count = 0;
                 for(CommentReply reply: replies){
                     if(count == ViewHolder.MAX_REPLY_NUM) break;
+                    User user = users.get(reply.author_email);
                     View reply_item = holder.reply_items.get(count);
+                    ((TextView)reply_item.findViewById(R.id.user_name)).setText(user.name);
+                    ((TextView)reply_item.findViewById(R.id.replyToName)).setText(author.name);
                     ((TextView)reply_item.findViewById(R.id.comment)).setText(reply.content);
                     ((TextView)reply_item.findViewById(R.id.time)).setText(TimeConverter.convertTime(reply.time));
+                    View photoArea = reply_item.findViewById(R.id.user_photo_area);
+                    ((ImageView)photoArea.findViewById(R.id.user_photo)).setImageBitmap(null);
+                    photoArea.findViewById(R.id.user_photo).setVisibility(View.GONE);
+                    photoArea.findViewById(R.id.user_photo_progress_bar).setVisibility(View.VISIBLE);
+                    new LoadPhotoThread(user.photo_url, photoArea, holder).start();
                     holder.reply_list.addView(reply_item);
                     count ++;
                 }
             }else{
                 Article article = (Article) getItem(position);
+                User author = users.get(article.author_email);
+                holder.user_name.setText(author.name);
                 holder.title.setText(article.title);
                 holder.content.setText(article.content);
                 holder.time.setText(TimeConverter.convertTime(article.time));
@@ -290,14 +309,26 @@ public class CommentsAndArticlesView extends ViewContent {
                     holder.dislike_icon.setImageResource(R.drawable.dislike_colored);
                 else
                     holder.dislike_icon.setImageResource(R.drawable.dislike_bw);
+                holder.user_photo.setImageBitmap(null);
+                holder.user_photo.setVisibility(View.GONE);
+                holder.user_photo_progress_bar.setVisibility(View.VISIBLE);
+                new LoadPhotoThread(author.photo_url, holder.user_photo_area, holder).start();
                 holder.reply_list.removeAllViews();
                 List<Comment> comments = articleComments.get(article.id);
                 int count = 0;
                 for(Comment comment: comments){
                     if(count == ViewHolder.MAX_REPLY_NUM) break;
+                    User user = users.get(comment.author_email);
                     View reply_item = holder.reply_items.get(count);
+                    ((TextView)reply_item.findViewById(R.id.user_name)).setText(user.name);
+                    ((TextView)reply_item.findViewById(R.id.replyToName)).setText(author.name);
                     ((TextView)reply_item.findViewById(R.id.comment)).setText(comment.content);
                     ((TextView)reply_item.findViewById(R.id.time)).setText(TimeConverter.convertTime(comment.time));
+                    View photoArea = reply_item.findViewById(R.id.user_photo_area);
+                    ((ImageView)photoArea.findViewById(R.id.user_photo)).setImageBitmap(null);
+                    photoArea.findViewById(R.id.user_photo).setVisibility(View.GONE);
+                    photoArea.findViewById(R.id.user_photo_progress_bar).setVisibility(View.VISIBLE);
+                    new LoadPhotoThread(user.photo_url, photoArea, holder).start();
                     holder.reply_list.addView(reply_item);
                     count ++;
                 }
@@ -305,7 +336,6 @@ public class CommentsAndArticlesView extends ViewContent {
             holder.comment_btn.setOnClickListener(new CommentBtnListener(getItem(position)));
             holder.like_btn.setOnClickListener(new LikeBtnListener(holder, getItem(position)));
             holder.dislike_btn.setOnClickListener(new DislikeBtnListener(holder, getItem(position)));
-            holder.position = position;
             final ViewHolder finalHolder = holder;
             holder.ellipsis.setVisibility(View.GONE);
             holder.content.post(new Runnable() {
@@ -323,6 +353,30 @@ public class CommentsAndArticlesView extends ViewContent {
 
     private class LoadPhotoThread extends Thread{
 
+        private final String url;
+        private final View photoArea;
+        private final ViewHolder holder;
+        private final int position;
+
+        public LoadPhotoThread(String url, View photoArea, ViewHolder holder){
+            this.url = url;
+            this.photoArea = photoArea;
+            this.holder = holder;
+            this.position = holder.position;
+        }
+
+        @Override
+        public void run(){
+            Message message = new Message();
+            HashMap<String, Object> data = new HashMap<String, Object>();
+            data.put("task", TASK_LOAD_PHOTO);
+            data.put("bitmap", BitmapFetcher.fetchBitmap(url));
+            data.put("holder", holder);
+            data.put("position", position);
+            data.put("photoArea", photoArea);
+            message.obj = data;
+            handler.sendMessage(message);
+        }
 
     }
 
@@ -455,7 +509,17 @@ public class CommentsAndArticlesView extends ViewContent {
             final int position = (Integer) data.get("position");
             switch (task){
                 case TASK_LOAD_PHOTO:
-                    content.isLoadingPhoto[position] = false;
+                    if(holder.position != position)
+                        return;
+                    View photoArea = (View) data.get("photoArea");
+                    Bitmap bitmap = (Bitmap) data.get("bitmap");
+                    photoArea.findViewById(R.id.user_photo_progress_bar).setVisibility(View.GONE);
+                    ImageView image = (ImageView) photoArea.findViewById(R.id.user_photo);
+                    image.setVisibility(View.VISIBLE);
+                    if(bitmap == null)
+                        image.setImageResource(R.drawable.error);
+                    else
+                        image.setImageBitmap(bitmap);
                     break;
                 case TASK_TOGGLE_LIKE:
                     content.isTogglingLikeness[position] = false;

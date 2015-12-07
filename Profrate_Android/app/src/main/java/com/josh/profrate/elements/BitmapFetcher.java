@@ -7,12 +7,15 @@ import android.util.LruCache;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.HashSet;
+import java.util.Set;
 
 public class BitmapFetcher {
     private static LruCache<String, Bitmap> cache;
     private static final String TAG = "BitmapFetcher";
     private static final int imageHeight = 320;
     private static final int imageWidth = 240;
+    private static final Set<String> isFetching = new HashSet<String>();
 
     private static void init(){
         final int maxMemory = (int) (Runtime.getRuntime().maxMemory() / 1024);
@@ -28,15 +31,28 @@ public class BitmapFetcher {
     public static Bitmap fetchBitmap(String url){
         if(cache == null) init();
         if(url == null) return null;
-        Bitmap bitmap = cache.get(url);
-        if(bitmap != null) return bitmap;
+        Bitmap bitmap = null;
+        synchronized (isFetching){
+            while(isFetching.contains(url))
+                try {
+                    isFetching.wait();
+                } catch (InterruptedException e) {}
+            bitmap = cache.get(url);
+            if(bitmap != null) return bitmap;
+            isFetching.add(url);
+        }
         try {
+
             bitmap = decodeSampledBitmapFromURL(url, imageWidth, imageHeight);
             if(bitmap == null) throw new Exception("Unable to decode bitmap!");
             cache.put(url, bitmap);
         } catch (Exception e) {
             Log.e(TAG, "There is an error when fetch image " + url);
             e.printStackTrace();
+        }
+        synchronized (isFetching){
+            isFetching.remove(url);
+            isFetching.notifyAll();
         }
         return bitmap;
     }

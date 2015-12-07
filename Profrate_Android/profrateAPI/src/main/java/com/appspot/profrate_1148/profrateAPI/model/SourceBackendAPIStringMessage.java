@@ -19,7 +19,7 @@
 package com.appspot.profrate_1148.profrateAPI.model;
 
 /**
- * Model definition for ProfrateCommentReplyResponse.
+ * Model definition for SourceBackendAPIStringMessage.
  *
  * <p> This is the Java data model class that specifies how to parse/serialize into the JSON that is
  * transmitted over HTTP when working with the profrateAPI. For a detailed explanation see:
@@ -29,37 +29,37 @@ package com.appspot.profrate_1148.profrateAPI.model;
  * @author Google, Inc.
  */
 @SuppressWarnings("javadoc")
-public final class ProfrateCommentReplyResponse extends com.google.api.client.json.GenericJson {
+public final class SourceBackendAPIStringMessage extends com.google.api.client.json.GenericJson {
 
   /**
    * The value may be {@code null}.
    */
-  @com.google.api.client.util.Key("comment_reply")
-  private ProfrateCommentReplyMessage commentReply;
+  @com.google.api.client.util.Key
+  private java.lang.String value;
 
   /**
    * @return value or {@code null} for none
    */
-  public ProfrateCommentReplyMessage getCommentReply() {
-    return commentReply;
+  public java.lang.String getValue() {
+    return value;
   }
 
   /**
-   * @param commentReply commentReply or {@code null} for none
+   * @param value value or {@code null} for none
    */
-  public ProfrateCommentReplyResponse setCommentReply(ProfrateCommentReplyMessage commentReply) {
-    this.commentReply = commentReply;
+  public SourceBackendAPIStringMessage setValue(java.lang.String value) {
+    this.value = value;
     return this;
   }
 
   @Override
-  public ProfrateCommentReplyResponse set(String fieldName, Object value) {
-    return (ProfrateCommentReplyResponse) super.set(fieldName, value);
+  public SourceBackendAPIStringMessage set(String fieldName, Object value) {
+    return (SourceBackendAPIStringMessage) super.set(fieldName, value);
   }
 
   @Override
-  public ProfrateCommentReplyResponse clone() {
-    return (ProfrateCommentReplyResponse) super.clone();
+  public SourceBackendAPIStringMessage clone() {
+    return (SourceBackendAPIStringMessage) super.clone();
   }
 
 }

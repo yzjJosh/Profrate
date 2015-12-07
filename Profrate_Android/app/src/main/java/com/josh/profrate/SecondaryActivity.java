@@ -12,7 +12,9 @@ import android.widget.TextView;
 
 import com.josh.profrate.dataStructures.Article;
 import com.josh.profrate.dataStructures.Comment;
+import com.josh.profrate.dataStructures.CommentReply;
 import com.josh.profrate.dataStructures.Professor;
+import com.josh.profrate.dataStructures.User;
 import com.josh.profrate.viewContents.CommentsAndArticlesView;
 import com.josh.profrate.viewContents.ViewContent;
 import com.josh.profrate.viewContents.ViewOneProsessor;
@@ -21,7 +23,9 @@ import com.josh.profrate.viewContents.ViewProfessors;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 
 public class SecondaryActivity extends Activity {
 
@@ -136,6 +140,7 @@ public class SecondaryActivity extends Activity {
         }
 
         @Override
+        @SuppressWarnings("unchecked")
         public void run(){
             isLoading = true;
             HashMap<String, Object> data = new HashMap<String, Object>();
@@ -152,6 +157,14 @@ public class SecondaryActivity extends Activity {
                         data.put("professor", professor);
                         data.put("comments", professor.getComments());
                         data.put("articles", professor.getArticles());
+                        Map<Long, List<CommentReply>> commentReplies = new HashMap<Long, List<CommentReply>>();
+                        for(Comment comment: (List<Comment>) data.get("comments"))
+                            commentReplies.put(comment.id, comment.getReplies());
+                        data.put("commentReplies", commentReplies);
+                        Map<Long, List<Comment>> articleComments = new HashMap<Long, List<Comment>>();
+                        for(Article article: (List<Article>) data.get("articles"))
+                            articleComments.put(article.id, article.getComments());
+                        data.put("articleComments", articleComments);
                         break;
                     default:
                         break;
@@ -191,7 +204,8 @@ public class SecondaryActivity extends Activity {
                         break;
                     case COMMENTS_AND_ARTICLES:
                         activity.content = new CommentsAndArticlesView(activity, activity.content_layout, (Professor) data.get("professor"),
-                                (List<Comment>) data.get("comments"), (List<Article>) data.get("articles"));
+                                (List<Comment>) data.get("comments"), (List<Article>) data.get("articles"), (Map<Long, List<CommentReply>>)data.get("commentReplies"),
+                                (Map<Long, List<Comment>>)data.get("articleComments"), new HashSet<User>());
                         break;
                     case SINGLE_COMMENT:
                         break;

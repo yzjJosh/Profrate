@@ -35,8 +35,7 @@ public class ViewProfessors extends ViewContent {
 
     private final List<Professor> professors;
     private final boolean[] isLoading;
-    private final boolean[] isTogglingLike;
-    private final boolean[] isTogglingDislike;
+    private final boolean[] isTogglingLikeness;
     private boolean isActive;
     private TaskHandler handler;
 
@@ -44,8 +43,7 @@ public class ViewProfessors extends ViewContent {
         super(context, parentLayout);
         this.professors = professors;
         this.isLoading = new boolean[professors.size()];
-        this.isTogglingLike = new boolean[professors.size()];
-        this.isTogglingDislike = new boolean[professors.size()];
+        this.isTogglingLikeness = new boolean[professors.size()];
         this.isActive = false;
         this.handler = new TaskHandler(this);
     }
@@ -87,6 +85,7 @@ public class ViewProfessors extends ViewContent {
         public void onClick(View v) {
             Intent intent = new Intent(context, SecondaryActivity.class);
             intent.putExtra("view", SecondaryActivity.PROFESSOR_DETAIL);
+            intent.putExtra("prof_id", professor.id);
             context.startActivity(intent);
         }
     }
@@ -274,8 +273,8 @@ public class ViewProfessors extends ViewContent {
 
         @Override
         public void run(){
-            if(isTogglingLike[position]) return;
-            isTogglingLike[position] = true;
+            if(isTogglingLikeness[position]) return;
+            isTogglingLikeness[position] = true;
             Message message = new Message();
             HashMap<String, Object> data = new HashMap<String, Object>();
             data.put("task", TASK_TOGGLE_LIKE);
@@ -315,8 +314,8 @@ public class ViewProfessors extends ViewContent {
 
         @Override
         public void run(){
-            if(isTogglingDislike[position]) return;
-            isTogglingDislike[position] = true;
+            if(isTogglingLikeness[position]) return;
+            isTogglingLikeness[position] = true;
             Message message = new Message();
             HashMap<String, Object> data = new HashMap<String, Object>();
             data.put("task", TASK_TOGGLE_DISLIKE);
@@ -372,7 +371,7 @@ public class ViewProfessors extends ViewContent {
                     }
                     break;
                 case TASK_TOGGLE_LIKE:
-                    content.isTogglingLike[position] = false;
+                    content.isTogglingLikeness[position] = false;
                     Professor professor = (Professor) data.get("professor");
                     if((Boolean)data.get("success")) {
                         if(professor.liked_by.contains(Credential.getCredential().getSelectedAccountName())) {
@@ -393,7 +392,7 @@ public class ViewProfessors extends ViewContent {
                         Toast.makeText(content.context, "Unable to toggle liking " + professor.name + "!", Toast.LENGTH_LONG).show();
                     break;
                 case TASK_TOGGLE_DISLIKE:
-                    content.isTogglingDislike[position] = false;
+                    content.isTogglingLikeness[position] = false;
                     professor = (Professor) data.get("professor");
                     if((Boolean)data.get("success")) {
                         if(professor.disliked_by.contains(Credential.getCredential().getSelectedAccountName())) {

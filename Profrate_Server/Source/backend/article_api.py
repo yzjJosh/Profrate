@@ -78,7 +78,7 @@ class ArticleAPI(remote.Service):
         article = Article.get_article(request.value)
         if not(user and article):
             return API.BooleanMessage(value=False)
-        article.article_toggle_dislike(user.email())
+        article.toggle_dislike(user.email())
         return API.BooleanMessage(value=True)
 
     @endpoints.method(ArticleEditRequest, API.BooleanMessage, http_method='POST', name='article_edit')

@@ -19,7 +19,7 @@ public class ArticleMethodTest extends ApplicationTestCase<Application> {
     @Override
     public void setUp() throws Exception {
         Credential.login(user_account, getContext());
-        article = Article.getArticle(5685265389584384L);
+        article = Article.getArticle(5676830073815040L);
     }
 
     @Override

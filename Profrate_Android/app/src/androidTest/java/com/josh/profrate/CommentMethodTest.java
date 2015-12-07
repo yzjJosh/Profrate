@@ -18,7 +18,7 @@ public class CommentMethodTest extends ApplicationTestCase<Application> {
     @Override
     public void setUp() throws Exception {
         Credential.login(user_account, getContext());
-        comment = Comment.getComment(5144752345317376L);
+        comment = Comment.getComment(5766466041282560L);
     }
 
     @Override

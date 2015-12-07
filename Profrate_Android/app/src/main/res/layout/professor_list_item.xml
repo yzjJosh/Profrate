@@ -24,6 +24,7 @@
         android:text="Adjunct Professor"/>
 
     <com.josh.profrate.elements.RatingStar
+        android:id="@+id/rating"
         android:layout_marginTop="10dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -31,12 +32,52 @@
         app:maxRating="5"
         app:rating="4.5"/>
 
-    <ImageView
-        android:id="@+id/photo"
+    <RelativeLayout
+        android:id="@+id/photo_area"
         android:layout_marginTop="10dp"
         android:layout_width="300dp"
         android:layout_height="300dp"
-        android:src="@drawable/samplephoto"/>
+        android:clickable="true"
+        android:gravity="center">
+
+        <ProgressBar
+            android:id="@+id/professor_photo_progress_bar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:indeterminate="true"
+            android:indeterminateDrawable="@drawable/progressbar"
+            android:visibility="gone"/>
+
+        <LinearLayout
+            android:id="@+id/professor_photo_error"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/error" />
+
+            <TextView
+                android:layout_marginTop="10dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:width="120dp"
+                android:text="Oops! Unable to load photo!"
+                android:textAlignment="center"/>
+
+        </LinearLayout>
+
+        <ImageView
+            android:id="@+id/photo"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone"/>
+
+    </RelativeLayout>
 
     <include
         layout="@layout/comment_tool_bar"

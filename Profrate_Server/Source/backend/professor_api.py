@@ -62,6 +62,8 @@ class ProfessorMessage(messages.Message):
     liked_by = messages.StringField(14, repeated=True)
     disliked_by = messages.StringField(15, repeated=True)
     id = messages.IntegerField(16, required=True)
+    comment_num = messages.IntegerField(17, required=True)
+    article_num = messages.IntegerField(18, required=True)
 
 
 def createProfessorMessage(professor):
@@ -81,7 +83,9 @@ def createProfessorMessage(professor):
         overall_rating=createRatingMessage(professor.overallRating),
         liked_by=professor.liked_by,
         disliked_by=professor.disliked_by,
-        id=professor.get_id()
+        id=professor.get_id(),
+        comment_num=professor.comment_num,
+        article_num=professor.article_num
     )
 
 
@@ -126,22 +130,22 @@ class ProfessorAPI(remote.Service):
         professor.write_article(user.email(), request.title, request.content)
         return API.BooleanMessage(value=True)
 
-    @endpoints.method(API.IntegerMessage, API.BooleanMessage, http_method='POST', name='professor_like')
-    def professor_like(self, request):
+    @endpoints.method(API.IntegerMessage, API.BooleanMessage, http_method='POST', name='professor_toggle_like')
+    def professor_toggle_like(self, request):
         user = endpoints.get_current_user()
         professor = Professor.get_professor(request.value)
         if not(user and professor):
             return API.BooleanMessage(value=False)
-        professor.like(user.email())
+        professor.toggle_like(user.email())
         return API.BooleanMessage(value=True)
 
-    @endpoints.method(API.IntegerMessage, API.BooleanMessage, http_method='POST', name='professor_dislike')
-    def professor_dislike(self, request):
+    @endpoints.method(API.IntegerMessage, API.BooleanMessage, http_method='POST', name='professor_toggle_dislike')
+    def professor_toggle_dislike(self, request):
         user = endpoints.get_current_user()
         professor = Professor.get_professor(request.value)
         if not(user and professor):
             return API.BooleanMessage(value=False)
-        professor.dislike(user.email())
+        professor.toggle_dislike(user.email())
         return API.BooleanMessage(value=True)
 
     @endpoints.method(API.IntegerMessage, ProfessorResponse, http_method='GET', name='professor_get')

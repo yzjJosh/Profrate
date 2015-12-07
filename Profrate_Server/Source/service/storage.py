@@ -4,12 +4,14 @@ import datetime
 
 class Comment(ndb.Model):
     target_id = ndb.IntegerProperty(required=True)
+    target_type = ndb.StringProperty(required=True)
     author_email = ndb.StringProperty(required=True)
     content = ndb.StringProperty(required=True, indexed=False)
     liked_by = ndb.StringProperty(repeated=True, indexed=False)
     disliked_by = ndb.StringProperty(repeated=True, indexed=False)
     like_num = ndb.IntegerProperty(default=0)
     dislike_num = ndb.IntegerProperty(default=0)
+    reply_num = ndb.IntegerProperty(default=0)
     time = ndb.DateTimeProperty(auto_now_add=True)
 
     @staticmethod
@@ -31,35 +33,48 @@ class Comment(ndb.Model):
         self.time = datetime.datetime.now()
         self.put()
 
-    def like(self, user_email):
-        if user_email in self.liked_by:
-            return
-        self.liked_by.append(user_email)
-        self.like_num = len(self.liked_by)
-        if user_email in self.disliked_by:
-            self.disliked_by.remove(user_email)
-            self.dislike_num = len(self.disliked_by)
-        self.put()
-
-    def dislike(self, user_email):
-        if user_email in self.disliked_by:
-            return
-        self.disliked_by.append(user_email)
-        self.dislike_num = len(self.disliked_by)
+    def toggle_like(self, user_email):
         if user_email in self.liked_by:
             self.liked_by.remove(user_email)
             self.like_num = len(self.liked_by)
+        else:
+            self.liked_by.append(user_email)
+            self.like_num = len(self.liked_by)
+            if user_email in self.disliked_by:
+                self.disliked_by.remove(user_email)
+                self.dislike_num = len(self.disliked_by)
+        self.put()
+
+    def toggle_dislike(self, user_email):
+        if user_email in self.disliked_by:
+            self.disliked_by.remove(user_email)
+            self.dislike_num = len(self.disliked_by)
+        else:
+            self.disliked_by.append(user_email)
+            self.dislike_num = len(self.disliked_by)
+            if user_email in self.liked_by:
+                self.liked_by.remove(user_email)
+                self.like_num = len(self.liked_by)
         self.put()
 
     def delete(self):
         for reply in self.get_replies():
             reply.delete()
         self.key.delete()
+        target = None
+        if self.target_type == "Professor":
+            target = Professor.get_professor(self.target_id)
+        elif self.target_type == "Article":
+            target = Article.get_article(self.target_id)
+        target.comment_num = target.comment_num - 1
+        target.put()
 
     def reply(self, user_email, content):
         reply = CommentReply(parent=CommentReply.parent_key(), comment_id=self.get_id(), author_email=user_email,
                              content=content)
         reply.put()
+        self.reply_num = self.reply_num + 1
+        self.put()
 
 
 class CommentReply(ndb.Model):
@@ -86,6 +101,9 @@ class CommentReply(ndb.Model):
 
     def delete(self):
         self.key.delete()
+        comment = Comment.get_Comment(self.comment_id)
+        comment.reply_num = comment.reply_num - 1
+        comment.put()
 
 
 class Article(ndb.Model):
@@ -97,6 +115,7 @@ class Article(ndb.Model):
     disliked_by = ndb.StringProperty(repeated=True, indexed=False)
     like_num = ndb.IntegerProperty(default=0)
     dislike_num = ndb.IntegerProperty(default=0)
+    comment_num = ndb.IntegerProperty(default=0)
     time = ndb.DateTimeProperty(auto_now_add=True)
 
     @staticmethod
@@ -119,34 +138,43 @@ class Article(ndb.Model):
         self.time = datetime.datetime.now()
         self.put()
 
-    def like(self, user_email):
-        if user_email in self.liked_by:
-            return
-        self.liked_by.append(user_email)
-        self.like_num = len(self.liked_by)
-        if user_email in self.disliked_by:
-            self.disliked_by.remove(user_email)
-            self.dislike_num = len(self.disliked_by)
-        self.put()
-
-    def dislike(self, user_email):
-        if user_email in self.disliked_by:
-            return
-        self.disliked_by.append(user_email)
-        self.dislike_num = len(self.disliked_by)
+    def toggle_like(self, user_email):
         if user_email in self.liked_by:
             self.liked_by.remove(user_email)
             self.like_num = len(self.liked_by)
+        else:
+            self.liked_by.append(user_email)
+            self.like_num = len(self.liked_by)
+            if user_email in self.disliked_by:
+                self.disliked_by.remove(user_email)
+                self.dislike_num = len(self.disliked_by)
+        self.put()
+
+    def toggle_dislike(self, user_email):
+        if user_email in self.disliked_by:
+            self.disliked_by.remove(user_email)
+            self.dislike_num = len(self.disliked_by)
+        else:
+            self.disliked_by.append(user_email)
+            self.dislike_num = len(self.disliked_by)
+            if user_email in self.liked_by:
+                self.liked_by.remove(user_email)
+                self.like_num = len(self.liked_by)
         self.put()
 
     def delete(self):
         for comment in self.get_comments():
             comment.delete()
         self.key.delete()
+        professor = Professor.get_professor(self.target_id)
+        professor.article_num = professor.article_num - 1
+        professor.put()
 
     def comment(self, user_email, content):
-        comment = Comment(parent=Comment.parent_key(), target_id=self.get_id(), author_email=user_email, content=content)
+        comment = Comment(parent=Comment.parent_key(), target_id=self.get_id(), target_type='Article', author_email=user_email, content=content)
         comment.put()
+        self.comment_num = self.comment_num + 1
+        self.put()
 
 
 class ProfRating(ndb.Model):
@@ -181,6 +209,8 @@ class Professor(ndb.Model):
     disliked_by = ndb.StringProperty(repeated=True, indexed=False)
     like_num = ndb.IntegerProperty(default=0)
     dislike_num = ndb.IntegerProperty(default=0)
+    comment_num = ndb.IntegerProperty(default=0)
+    article_num = ndb.IntegerProperty(default=0)
 
     @staticmethod
     def get_all_professors():
@@ -248,30 +278,38 @@ class Professor(ndb.Model):
 
 
     def comment(self, user_email, content):
-        comment = Comment(parent=Comment.parent_key(), target_id=self.get_id(), author_email=user_email, content=content)
+        comment = Comment(parent=Comment.parent_key(), target_id=self.get_id(), target_type='Professor', author_email=user_email, content=content)
         comment.put()
+        self.comment_num = self.comment_num + 1
+        self.put()
 
     def write_article(self, user_email, title, content):
         article = Article(parent=Article.parent_key(), target_id=self.get_id(), author_email=user_email, title=title, content=content)
         article.put()
-
-    def like(self, user_email):
-        if user_email in self.liked_by:
-            return
-        self.liked_by.append(user_email)
-        self.like_num = len(self.liked_by)
-        if user_email in self.disliked_by:
-            self.disliked_by.remove(user_email)
-            self.dislike_num = len(self.disliked_by)
+        self.article_num = self.article_num + 1
         self.put()
 
-    def dislike(self, user_email):
-        if user_email in self.disliked_by:
-            return
-        self.disliked_by.append(user_email)
-        self.dislike_num = len(self.disliked_by)
+    def toggle_like(self, user_email):
         if user_email in self.liked_by:
             self.liked_by.remove(user_email)
             self.like_num = len(self.liked_by)
+        else:
+            self.liked_by.append(user_email)
+            self.like_num = len(self.liked_by)
+            if user_email in self.disliked_by:
+                self.disliked_by.remove(user_email)
+                self.dislike_num = len(self.disliked_by)
+        self.put()
+
+    def toggle_dislike(self, user_email):
+        if user_email in self.disliked_by:
+            self.disliked_by.remove(user_email)
+            self.dislike_num = len(self.disliked_by)
+        else:
+            self.disliked_by.append(user_email)
+            self.dislike_num = len(self.disliked_by)
+            if user_email in self.liked_by:
+                self.liked_by.remove(user_email)
+                self.like_num = len(self.liked_by)
         self.put()
 

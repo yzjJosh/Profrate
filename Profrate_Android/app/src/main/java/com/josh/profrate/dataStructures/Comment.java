@@ -15,6 +15,7 @@ public class Comment {
     public final String author_email;
     public final List<String> liked_by;
     public final List<String> disliked_by;
+    public final long reply_num;
 
     Comment(ProfrateCommentMessage comment){
         this.id = comment.getId();
@@ -23,6 +24,7 @@ public class Comment {
         this.author_email = comment.getAuthorEmail();
         this.liked_by = comment.getLikedBy()==null? new ArrayList<String>(): comment.getLikedBy();
         this.disliked_by = comment.getDislikedBy()==null? new ArrayList<String>(): comment.getDislikedBy();
+        this.reply_num = comment.getReplyNum();
     }
 
     public static Comment getComment(long comment_id) throws IOException {
@@ -43,12 +45,12 @@ public class Comment {
         return BackendAPI.comment_get_replies(id);
     }
 
-    public boolean like() throws IOException{
-        return BackendAPI.comment_like(id, Credential.getCredential());
+    public boolean toggle_like() throws IOException{
+        return BackendAPI.comment_toggle_like(id, Credential.getCredential());
     }
 
-    public boolean dislike() throws IOException{
-        return BackendAPI.comment_dislike(id, Credential.getCredential());
+    public boolean toggle_dislike() throws IOException{
+        return BackendAPI.comment_toggle_dislike(id, Credential.getCredential());
     }
 
     public boolean reply(String content) throws IOException{

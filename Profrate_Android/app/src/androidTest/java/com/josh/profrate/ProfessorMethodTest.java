@@ -20,7 +20,7 @@ public class ProfessorMethodTest extends ApplicationTestCase<Application> {
     @Override
     public void setUp() throws Exception {
         Credential.login(user_email, getContext());
-        professor = Professor.getProfessor(6245567495667712L);
+        professor = Professor.getProfessor(4657391668822016L);
     }
 
     @Override
@@ -58,12 +58,12 @@ public class ProfessorMethodTest extends ApplicationTestCase<Application> {
     }
 
     public void testLike() throws Exception{
-        assertTrue(professor.like());
+        assertTrue(professor.toggle_like());
         professor = Professor.getProfessor(professor.id);
         assertNotNull(professor);
         assertTrue(professor.liked_by.contains(user_email));
         assertFalse(professor.disliked_by.contains(user_email));
-        assertTrue(professor.dislike());
+        assertTrue(professor.toggle_dislike());
         professor = Professor.getProfessor(professor.id);
         assertNotNull(professor);
         assertTrue(professor.disliked_by.contains(user_email));

@@ -19,21 +19,63 @@
         android:orientation="vertical">
 
         <TextView
-            android:id="@+id/user_name"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Josh"
-            android:textSize="18sp"
-            android:textStyle="bold"/>
-
-        <TextView
-            android:id="@+id/comment"
+            android:id="@+id/title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="5dp"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="@color/dark_blue"
+            android:text="Dr. Aziz, the best professor in UT ECE"/>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_alignParentStart="true">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="15sp"
+                    android:textStyle="italic"
+                    android:text="by "
+                    android:textColor="@color/gray"/>
+
+                <TextView
+                    android:id="@+id/user_name"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Josh"
+                    android:textSize="15sp"/>
+
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/time"
+                android:layout_marginTop="5dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:textColor="@color/gray"
+                android:text="11:32, Aug. 23, 2015"/>
+
+        </RelativeLayout>
+
+        <TextView
+            android:id="@+id/content"
+            android:layout_marginTop="5dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:textSize="15sp"
             android:maxLines="5"
             android:text="I think Dr. Aziz is a great professor. His Advanced Programming Tools is a very interesting course.I highly recommend everyone to take this course! That is really unbelievable! I really love him! I want to do anything for him! I love him! So much!!!"/>
+
 
         <TextView
             android:id="@+id/ellipsis"
@@ -42,14 +84,6 @@
             android:textSize="15sp"
             android:text="..."
             android:visibility="gone"/>
-
-        <TextView
-            android:id="@+id/time"
-            android:layout_marginTop="5dp"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textColor="@color/gray"
-            android:text="11:32, Aug. 23, 2015"/>
 
         <include
             layout="@layout/comment_tool_bar"
@@ -63,6 +97,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical" />
+
     </LinearLayout>
 
 </LinearLayout>

@@ -26,6 +26,7 @@ class CommentMessage(messages.Message):
     time = messages.IntegerField(4, required=True)
     author_email = messages.StringField(5, required=True)
     id = messages.IntegerField(6, required=True)
+    reply_num = messages.IntegerField(7, required=True)
 
 
 def createCommentMessage(comment):
@@ -35,7 +36,8 @@ def createCommentMessage(comment):
         disliked_by=comment.disliked_by,
         time=int((comment.time - datetime.datetime.utcfromtimestamp(0)).total_seconds()*1000.0),
         author_email=comment.author_email,
-        id=comment.get_id()
+        id=comment.get_id(),
+        reply_num=comment.reply_num
     )
 
 
@@ -82,22 +84,22 @@ class CommentAPI(remote.Service):
         replies = [comment_reply_api.createCommentReplyMessage(reply) for reply in comment.get_replies()]
         return comment_reply_api.MultiCommentReplyResponse(comment_replies=replies)
 
-    @endpoints.method(API.IntegerMessage, API.BooleanMessage, http_method='POST', name='comment_like')
-    def comment_like(self, request):
+    @endpoints.method(API.IntegerMessage, API.BooleanMessage, http_method='POST', name='comment_toggle_like')
+    def comment_toggle_like(self, request):
         user = endpoints.get_current_user()
         comment = Comment.get_Comment(request.value)
         if not (user and comment):
             return API.BooleanMessage(value=False)
-        comment.like(user.email())
+        comment.toggle_like(user.email())
         return API.BooleanMessage(value=True)
 
-    @endpoints.method(API.IntegerMessage, API.BooleanMessage, http_method='POST', name='comment_dislike')
-    def comment_dislike(self, request):
+    @endpoints.method(API.IntegerMessage, API.BooleanMessage, http_method='POST', name='comment_toggle_dislike')
+    def comment_toggle_dislike(self, request):
         user = endpoints.get_current_user()
         comment = Comment.get_Comment(request.value)
         if not (user and comment):
             return API.BooleanMessage(value=False)
-        comment.dislike(user.email())
+        comment.toggle_dislike(user.email())
         return API.BooleanMessage(value=True)
 
     @endpoints.method(ReplyRequest, API.BooleanMessage, http_method='POST', name='comment_reply')

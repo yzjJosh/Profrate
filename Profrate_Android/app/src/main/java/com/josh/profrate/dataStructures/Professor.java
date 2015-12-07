@@ -26,6 +26,8 @@ public class Professor {
     public final Rating overall_rating;
     public final List<String> liked_by;
     public final List<String> disliked_by;
+    public final long comment_num;
+    public final long article_num;
 
     Professor(ProfrateProfessorMessage prof){
         this.id = prof.getId();
@@ -44,6 +46,8 @@ public class Professor {
         this.overall_rating = new Rating(prof.getOverallRating());
         this.liked_by = prof.getLikedBy()==null? new ArrayList<String>(): prof.getLikedBy();
         this.disliked_by = prof.getDislikedBy()==null? new ArrayList<String>(): prof.getDislikedBy();
+        this.comment_num = prof.getCommentNum();
+        this.article_num = prof.getArticleNum();
     }
 
     public static Professor getProfessor(long prof_id) throws IOException{
@@ -68,12 +72,12 @@ public class Professor {
         return BackendAPI.professor_write_article(id, title, content, Credential.getCredential());
     }
 
-    public boolean like() throws IOException{
-        return BackendAPI.professor_like(id, Credential.getCredential());
+    public boolean toggle_like() throws IOException{
+        return BackendAPI.professor_toggle_like(id, Credential.getCredential());
     }
 
-    public boolean dislike() throws IOException{
-        return BackendAPI.professor_dislike(id, Credential.getCredential());
+    public boolean toggle_dislike() throws IOException{
+        return BackendAPI.professor_toggle_dislike(id, Credential.getCredential());
     }
 
     public List<Comment> getComments() throws IOException{

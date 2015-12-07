@@ -23,6 +23,7 @@ import com.josh.profrate.dataStructures.Professor;
 import com.josh.profrate.viewContents.ViewContent;
 import com.josh.profrate.viewContents.ViewProfessors;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -141,7 +142,7 @@ public class MainActivity extends Activity {
             switchContent(cur_view);
     }
 
-    class MenuListAdapter extends BaseAdapter {
+    private class MenuListAdapter extends BaseAdapter {
         private List<Map<String, Object>> menuData;
 
         public MenuListAdapter(List<Map<String, Object>> data){
@@ -163,13 +164,24 @@ public class MainActivity extends Activity {
             return (long)((Integer)menuData.get(pos).get("view_id"));
         }
 
+        private class ViewHolder{
+            public TextView view_name;
+            public ImageView icon;
+        }
+
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
+            ViewHolder holder = null;
             if (convertView == null) {
                 convertView = getLayoutInflater().inflate(R.layout.drawer_list_item, parent, false);
-                ((TextView) convertView.findViewById(R.id.item_text)).setText(view_names[(int)getItemId(position)]);
-                ((ImageView) convertView.findViewById(R.id.item_icon)).setImageResource((Integer)menuData.get(position).get("icon"));
-            }
+                holder = new ViewHolder();
+                holder.view_name = (TextView) convertView.findViewById(R.id.item_text);
+                holder.icon = (ImageView) convertView.findViewById(R.id.item_icon);
+                convertView.setTag(holder);
+            }else
+                holder = (ViewHolder) convertView.getTag();
+            holder.view_name.setText(view_names[(int) getItemId(position)]);
+            holder.icon.setImageResource((Integer)menuData.get(position).get("icon"));
             if(getItemId(position) == cur_view)
                 convertView.setBackgroundResource(R.color.menu_selected);
             else
@@ -178,7 +190,7 @@ public class MainActivity extends Activity {
         }
     }
 
-    class LoadingThread extends Thread{
+    private class LoadingThread extends Thread{
 
         private final int type;
 
@@ -193,13 +205,13 @@ public class MainActivity extends Activity {
             try {
                 switch (type) {
                     case VIEW_PROFESSORS:
-                        //data.put("streams", BackEndAPI.getOwnedStreams(Credential.getCredential()));
+                        data.put("professors", Professor.getAllProfessors());
                         break;
                     default:
                         break;
                 }
                 data.put("success", true);
-            } catch (Exception e) {
+            } catch (IOException e) {
                 e.printStackTrace();
                 data.put("success", false);
             }
@@ -209,7 +221,7 @@ public class MainActivity extends Activity {
         }
     }
 
-    static class BackEndTaskHandler extends Handler {
+    private static class BackEndTaskHandler extends Handler {
         private  MainActivity activity;
 
         public BackEndTaskHandler(MainActivity activity){
@@ -225,7 +237,7 @@ public class MainActivity extends Activity {
             if((Boolean) data.get("success")) {
                 switch((Integer)data.get("type")) {
                     case VIEW_PROFESSORS:
-                        activity.content = new ViewProfessors(activity, activity.content_layout, new ArrayList<Professor>());
+                        activity.content = new ViewProfessors(activity, activity.content_layout, (List<Professor>) data.get("professors"));
                         break;
                     default:
                         break;

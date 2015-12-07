@@ -10,21 +10,26 @@ import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.josh.profrate.dataStructures.Article;
 import com.josh.profrate.dataStructures.Comment;
 import com.josh.profrate.dataStructures.Professor;
-import com.josh.profrate.viewContents.CommentsView;
+import com.josh.profrate.viewContents.CommentsAndArticlesView;
 import com.josh.profrate.viewContents.ViewContent;
 import com.josh.profrate.viewContents.ViewOneProsessor;
 import com.josh.profrate.viewContents.ViewProfessors;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 public class SecondaryActivity extends Activity {
 
     public static final int SEARCH = 0;
     public static final int PROFESSOR_DETAIL = 1;
-    public static final int COMMENTS = 2;
+    public static final int COMMENTS_AND_ARTICLES = 2;
+    public static final int SINGLE_COMMENT = 3;
+    public static final int SINGLE_ARTICLE = 4;
 
     private RelativeLayout content_layout;
     private ViewContent content;
@@ -34,7 +39,7 @@ public class SecondaryActivity extends Activity {
     private TextView activityTitile;
     private boolean isLoading;
     private boolean isActive;
-    private String search_key;
+    private Object value;
     private int cur_view;
 
     private SearchHandler handler = new SearchHandler(this);
@@ -44,8 +49,22 @@ public class SecondaryActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_search_result);
         cur_view = getIntent().getIntExtra("view", -1);
-        if(cur_view == SEARCH)
-            search_key = getIntent().getStringExtra("key");
+        switch(cur_view){
+            case SEARCH:
+                value = getIntent().getStringExtra("key");
+                break;
+            case PROFESSOR_DETAIL:
+            case COMMENTS_AND_ARTICLES:
+                value = getIntent().getLongExtra("prof_id", 0L);
+                break;
+            case SINGLE_COMMENT:
+                value = getIntent().getLongExtra("comment_id", 0L);
+                break;
+            case SINGLE_ARTICLE:
+                value = getIntent().getLongExtra("article_id", 0L);
+            default:
+                break;
+        }
         activityTitile = ((TextView)findViewById(R.id.search_result_title));
         content_layout = (RelativeLayout) findViewById(R.id.search_result_content);
         progressBar = (ProgressBar) findViewById(R.id.search_result_progress_bar);
@@ -71,11 +90,15 @@ public class SecondaryActivity extends Activity {
     private String viewName(int view_id){
         switch (view_id){
             case SEARCH:
-                return "Search for \""+search_key+"\"";
+                return "Search for \""+value+"\"";
             case PROFESSOR_DETAIL:
                 return "Professor Details";
-            case COMMENTS:
-                return "Comments";
+            case COMMENTS_AND_ARTICLES:
+                return "Comments and Articles";
+            case SINGLE_COMMENT:
+                return "Comment Details";
+            case SINGLE_ARTICLE:
+                return "Article Details";
             default:
                 break;
         }
@@ -83,7 +106,7 @@ public class SecondaryActivity extends Activity {
     }
 
     private void switchContent(int view_id){
-        if(view_id >COMMENTS || view_id < SEARCH) return;
+        if(view_id >COMMENTS_AND_ARTICLES || view_id < SEARCH) return;
         activityTitile.setText(viewName(view_id));
         if(content != null) {
             content.clear();
@@ -118,9 +141,23 @@ public class SecondaryActivity extends Activity {
             HashMap<String, Object> data = new HashMap<String, Object>();
             data.put("type", type);
             try{
-                //data.put("streams", BackEndAPI.searchStreams(search_key));
+                switch (type){
+                    case SEARCH:
+                        break;
+                    case PROFESSOR_DETAIL:
+                        data.put("professor", Professor.getProfessor((long)value));
+                        break;
+                    case COMMENTS_AND_ARTICLES:
+                        Professor professor = Professor.getProfessor((long) value);
+                        data.put("professor", professor);
+                        data.put("comments", professor.getComments());
+                        data.put("articles", professor.getArticles());
+                        break;
+                    default:
+                        break;
+                }
                 data.put("success", true);
-            } catch (Exception e) {
+            } catch (IOException e){
                 e.printStackTrace();
                 data.put("success", false);
             }
@@ -130,7 +167,7 @@ public class SecondaryActivity extends Activity {
         }
     }
 
-    static class SearchHandler extends Handler {
+    private static class SearchHandler extends Handler {
 
         private SecondaryActivity activity;
 
@@ -152,8 +189,13 @@ public class SecondaryActivity extends Activity {
                     case PROFESSOR_DETAIL:
                         activity.content = new ViewOneProsessor(activity, activity.content_layout, null);
                         break;
-                    case COMMENTS:
-                        activity.content = new CommentsView(activity, activity.content_layout, new ArrayList<Comment>());
+                    case COMMENTS_AND_ARTICLES:
+                        activity.content = new CommentsAndArticlesView(activity, activity.content_layout, (Professor) data.get("professor"),
+                                (List<Comment>) data.get("comments"), (List<Article>) data.get("articles"));
+                        break;
+                    case SINGLE_COMMENT:
+                        break;
+                    case SINGLE_ARTICLE:
                         break;
                     default:
                         break;

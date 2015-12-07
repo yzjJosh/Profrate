@@ -28,6 +28,7 @@ class ArticleMessage(messages.Message):
     disliked_by = messages.StringField(5, repeated=True)
     time = messages.IntegerField(6, required=True)
     id = messages.IntegerField(7, required=True)
+    comment_num = messages.IntegerField(8, required=True)
 
 
 def createArticleMessage(article):
@@ -38,7 +39,8 @@ def createArticleMessage(article):
         liked_by=article.liked_by,
         disliked_by=article.disliked_by,
         time=int((article.time - datetime.datetime.utcfromtimestamp(0)).total_seconds()*1000.0),
-        id=article.get_id()
+        id=article.get_id(),
+        comment_num=article.comment_num
     )
 
 
@@ -61,22 +63,22 @@ class ArticleAPI(remote.Service):
         article.comment(user.email(), request.content)
         return API.BooleanMessage(value=True)
 
-    @endpoints.method(API.IntegerMessage, API.BooleanMessage, http_method='POST', name='article_like')
-    def article_like(self, request):
+    @endpoints.method(API.IntegerMessage, API.BooleanMessage, http_method='POST', name='article_toggle_like')
+    def article_toggle_like(self, request):
         user = endpoints.get_current_user()
         article = Article.get_article(request.value)
         if not(user and article):
             return API.BooleanMessage(value=False)
-        article.like(user.email())
+        article.toggle_like(user.email())
         return API.BooleanMessage(value=True)
 
-    @endpoints.method(API.IntegerMessage, API.BooleanMessage, http_method='POST', name='article_dislike')
-    def article_dislike(self, request):
+    @endpoints.method(API.IntegerMessage, API.BooleanMessage, http_method='POST', name='article_toggle_dislike')
+    def article_toggle_dislike(self, request):
         user = endpoints.get_current_user()
         article = Article.get_article(request.value)
         if not(user and article):
             return API.BooleanMessage(value=False)
-        article.dislike(user.email())
+        article.article_toggle_dislike(user.email())
         return API.BooleanMessage(value=True)
 
     @endpoints.method(ArticleEditRequest, API.BooleanMessage, http_method='POST', name='article_edit')

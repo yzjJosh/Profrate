@@ -3,6 +3,8 @@ package com.josh.profrate.dataStructures;
 import android.support.annotation.Nullable;
 
 import com.appspot.profrate_1148.profrateAPI.ProfrateAPI;
+import com.appspot.profrate_1148.profrateAPI.model.ProfrateArticleCommentRequest;
+import com.appspot.profrate_1148.profrateAPI.model.ProfrateArticleEditRequest;
 import com.appspot.profrate_1148.profrateAPI.model.ProfrateArticleMessage;
 import com.appspot.profrate_1148.profrateAPI.model.ProfrateCommentEditRequest;
 import com.appspot.profrate_1148.profrateAPI.model.ProfrateCommentMessage;
@@ -18,7 +20,6 @@ import com.appspot.profrate_1148.profrateAPI.model.SourceBackendAPIIntegerMessag
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.extensions.android.json.AndroidJsonFactory;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
-import com.josh.profrate.elements.Credential;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -62,18 +63,18 @@ public class BackendAPI {
         return buildAPI(credential).professorWriteArticle(request).execute().getValue();
     }
 
-    static boolean professor_like(long prof_id, GoogleAccountCredential credential) throws IOException{
+    static boolean professor_toggle_like(long prof_id, GoogleAccountCredential credential) throws IOException{
         if(credential == null) return false;
         SourceBackendAPIIntegerMessage request = new SourceBackendAPIIntegerMessage();
         request.setValue(prof_id);
-        return buildAPI(credential).professorLike(request).execute().getValue();
+        return buildAPI(credential).professorToggleLike(request).execute().getValue();
     }
 
-    static boolean professor_dislike(long prof_id, GoogleAccountCredential credential) throws IOException{
+    static boolean professor_toggle_dislike(long prof_id, GoogleAccountCredential credential) throws IOException{
         if(credential == null) return false;
         SourceBackendAPIIntegerMessage request = new SourceBackendAPIIntegerMessage();
         request.setValue(prof_id);
-        return buildAPI(credential).professorDislike(request).execute().getValue();
+        return buildAPI(credential).professorToggleDislike(request).execute().getValue();
     }
 
     static Professor professor_get(long prof_id) throws IOException{
@@ -142,18 +143,18 @@ public class BackendAPI {
         return ret;
     }
 
-    static boolean comment_like(long comment_id, GoogleAccountCredential credential) throws IOException{
+    static boolean comment_toggle_like(long comment_id, GoogleAccountCredential credential) throws IOException{
         if(credential == null) return false;
         SourceBackendAPIIntegerMessage request = new SourceBackendAPIIntegerMessage();
         request.setValue(comment_id);
-        return buildAPI(credential).commentLike(request).execute().getValue();
+        return buildAPI(credential).commentToggleLike(request).execute().getValue();
     }
 
-    static boolean comment_dislike(long comment_id, GoogleAccountCredential credential) throws IOException{
+    static boolean comment_toggle_dislike(long comment_id, GoogleAccountCredential credential) throws IOException{
         if(credential == null) return false;
         SourceBackendAPIIntegerMessage request = new SourceBackendAPIIntegerMessage();
         request.setValue(comment_id);
-        return buildAPI(credential).commentDislike(request).execute().getValue();
+        return buildAPI(credential).commentToggleDislike(request).execute().getValue();
     }
 
     static boolean comment_reply(long comment_id, String content, GoogleAccountCredential credential) throws IOException{
@@ -182,6 +183,58 @@ public class BackendAPI {
     static CommentReply comment_reply_get(long reply_id) throws IOException{
         ProfrateCommentReplyMessage reply = buildAPI(null).commentReplyGet(reply_id).execute().getCommentReply();
         return reply==null? null: new CommentReply(reply);
+    }
+
+    static boolean article_comment(long article_id, String content, GoogleAccountCredential credential) throws IOException{
+        if(credential == null) return false;
+        ProfrateArticleCommentRequest request =  new ProfrateArticleCommentRequest();
+        request.setId(article_id);
+        request.setContent(content);
+        return buildAPI(credential).articleComment(request).execute().getValue();
+    }
+
+    static boolean article_toggle_like(long article_id, GoogleAccountCredential credential) throws IOException{
+        if(credential == null) return false;
+        SourceBackendAPIIntegerMessage request = new SourceBackendAPIIntegerMessage();
+        request.setValue(article_id);
+        return buildAPI(credential).articleToggleLike(request).execute().getValue();
+    }
+
+    static boolean article_toggle_dislike(long article_id, GoogleAccountCredential credential) throws IOException{
+        if(credential == null) return false;
+        SourceBackendAPIIntegerMessage request = new SourceBackendAPIIntegerMessage();
+        request.setValue(article_id);
+        return buildAPI(credential).articleToggleDislike(request).execute().getValue();
+    }
+
+    static boolean article_edit(long article_id, String title, String content, GoogleAccountCredential credential) throws IOException{
+        if(credential == null) return false;
+        ProfrateArticleEditRequest request = new ProfrateArticleEditRequest();
+        request.setId(article_id);
+        request.setTitle(title);
+        request.setContent(content);
+        return buildAPI(credential).articleEdit(request).execute().getValue();
+    }
+
+    static boolean article_delete(long article_id, GoogleAccountCredential credential) throws IOException{
+        if(credential == null) return false;
+        SourceBackendAPIIntegerMessage request = new SourceBackendAPIIntegerMessage();
+        request.setValue(article_id);
+        return buildAPI(credential).articleDelete(request).execute().getValue();
+    }
+
+    static Article article_get(long article_id) throws IOException{
+        ProfrateArticleMessage article = buildAPI(null).articleGet(article_id).execute().getArticle();
+        return article==null? null: new Article(article);
+    }
+
+    static List<Comment> article_get_comments(long article_id) throws IOException{
+        List<Comment> ret = new ArrayList<Comment>();
+        List<ProfrateCommentMessage> comments = buildAPI(null).articleGetComments(article_id).execute().getComments();
+        if(comments != null)
+            for(ProfrateCommentMessage comment: comments)
+                ret.add(new Comment(comment));
+        return ret;
     }
 
 }

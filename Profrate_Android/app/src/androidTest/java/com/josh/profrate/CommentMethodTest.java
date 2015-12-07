@@ -49,12 +49,12 @@ public class CommentMethodTest extends ApplicationTestCase<Application> {
     }
 
     public void testLike() throws Exception{
-        assertTrue(comment.like());
+        assertTrue(comment.toggle_like());
         comment = Comment.getComment(comment.id);
         assertNotNull(comment);
         assertTrue(comment.liked_by.contains(user_account));
         assertFalse(comment.disliked_by.contains(user_account));
-        assertTrue(comment.dislike());
+        assertTrue(comment.toggle_dislike());
         comment = Comment.getComment(comment.id);
         assertNotNull(comment);
         assertTrue(comment.disliked_by.contains(user_account));

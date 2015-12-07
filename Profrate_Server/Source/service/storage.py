@@ -1,4 +1,6 @@
 from google.appengine.ext import ndb
+from google.appengine.api.images import get_serving_url
+from google.appengine.ext import blobstore
 import datetime
 
 
@@ -313,3 +315,40 @@ class Professor(ndb.Model):
                 self.like_num = len(self.liked_by)
         self.put()
 
+
+class User(ndb.Model):
+    name = ndb.StringProperty(required=True)
+    photo = ndb.BlobKeyProperty(indexed=False)
+
+    @staticmethod
+    def parent_key():
+        return ndb.Key("User_Ancestor", "Ancestor")
+
+    @staticmethod
+    def create_User(email, name, photo=None):
+        user = User(parent=User.parent_key(), id=email, name=name, photo=photo)
+        user.put()
+        return user
+
+    @staticmethod
+    def find_User(email):
+        return User.get_by_id(email, User.parent_key())
+
+    def get_photo_url(self):
+        if self.photo:
+            return get_serving_url(self.photo)
+        else:
+            return '/assets/images/default_user_photo.png'
+
+    def get_email(self):
+        return self.key.id()
+
+    def edit_name(self, name):
+        self.name = name
+        self.put()
+
+    def edit_photo(self, photo):
+        if self.photo:
+            blobstore.delete(self.photo)
+        self.photo = photo
+        self.put()

@@ -15,6 +15,9 @@ handlers:
 - url: /_ah/spi/.*
   script: Source.backend.backend.APPLICATION
 
+- url: /storage.*
+  script: Source.service.storage.app
+
 - url: .*
   script: main.app
 

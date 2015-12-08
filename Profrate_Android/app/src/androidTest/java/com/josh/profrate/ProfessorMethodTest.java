@@ -10,7 +10,7 @@ import com.josh.profrate.elements.Credential;
 public class ProfessorMethodTest extends ApplicationTestCase<Application> {
 
     private Professor professor;
-    private  final String user_email = "yangzijiangjosh@gmail.com";
+    private  final String user_email = "yzjjosh@utexas.edu";
 
 
     public ProfessorMethodTest() {
@@ -20,7 +20,7 @@ public class ProfessorMethodTest extends ApplicationTestCase<Application> {
     @Override
     public void setUp() throws Exception {
         Credential.login(user_email, getContext());
-        professor = Professor.getProfessor(4657391668822016L);
+        professor = Professor.getProfessor(4667623891533824L);
     }
 
     @Override

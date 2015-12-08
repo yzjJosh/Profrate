@@ -1,7 +1,10 @@
 from google.appengine.ext import ndb
 from google.appengine.api.images import get_serving_url
 from google.appengine.ext import blobstore
+from google.appengine.ext.webapp import blobstore_handlers
 import datetime
+import urllib
+import webapp2
 
 
 class Comment(ndb.Model):
@@ -340,6 +343,9 @@ class User(ndb.Model):
         else:
             return '/assets/images/default_user_photo.png'
 
+    def get_photo_upload_url(self):
+        return blobstore.create_upload_url('/storage/upload/user_photo?'+urllib.urlencode({'email': self.get_email()}))
+
     def get_email(self):
         return self.key.id()
 
@@ -352,3 +358,30 @@ class User(ndb.Model):
             blobstore.delete(self.photo)
         self.photo = photo
         self.put()
+
+
+class UserPhotoUploadHandler(blobstore_handlers.BlobstoreUploadHandler):
+    def post(self):
+        email = self.request.get('email')
+        photo = self.get_uploads('photo')[0]
+        if not email:
+            blobstore.delete(photo.key())
+            self.error(400)
+            self.response.write("fail")
+            return
+        user = User.find_User(email)
+        if not user:
+            blobstore.delete(photo)
+            self.error(400)
+            self.response.write('fail');
+            return
+        if user.photo:
+            blobstore.delete(user.photo)
+        user.photo = photo.key()
+        user.put()
+        self.response.write('success')
+
+
+app = webapp2.WSGIApplication([
+    ("/storage/upload/user_photo(?:/(?:\?.*)?)?", UserPhotoUploadHandler)
+], debug=True)

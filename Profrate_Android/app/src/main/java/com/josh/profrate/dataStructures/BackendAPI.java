@@ -258,4 +258,9 @@ public class BackendAPI {
         return buildAPI(credential).userEditName(request).execute().getValue();
     }
 
+    static String user_get_photo_upload_url(GoogleAccountCredential credential) throws IOException{
+        if(credential == null) return null;
+        return buildAPI(credential).userGetPhotoUploadUrl().execute().getValue();
+    }
+
 }

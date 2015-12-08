@@ -22,6 +22,7 @@ import com.josh.profrate.elements.Credential;
 import com.josh.profrate.dataStructures.Professor;
 import com.josh.profrate.viewContents.ViewContent;
 import com.josh.profrate.viewContents.ViewProfessors;
+import com.josh.profrate.viewContents.ViewProfile;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -32,8 +33,11 @@ import java.util.Map;
 public class MainActivity extends Activity {
 
     public static final int VIEW_PROFESSORS = 0;
-    public static final int LOG_OUT = 1;
-    private static final String[] view_names = new String[] {"View Professors", "Log out"};
+    public static final int PROFILE = 1;
+    public static final int LOG_OUT = 2;
+
+
+    private static final String[] view_names = new String[] {"View Professors", "Profile", "Log out"};
 
     private DrawerLayout drawerLayout;
     private TextView title;
@@ -83,12 +87,22 @@ public class MainActivity extends Activity {
         isActive = false;
     }
 
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if(cur_view == PROFILE && content != null && content.isActive())
+            ((ViewProfile)content).onActivityResult(requestCode, resultCode, data);
+    }
+
 
     private List<Map<String, Object>> getMenuData(){
         List<Map<String, Object>> data = new ArrayList<Map<String, Object>>();
         HashMap<String, Object> item = new HashMap<String, Object>();
         item.put("icon", R.drawable.error);
         item.put("view_id", VIEW_PROFESSORS);
+        data.add(item);
+        item = new HashMap<String, Object>();
+        item.put("icon", R.drawable.error);
+        item.put("view_id", PROFILE);
         data.add(item);
         item = new HashMap<String, Object>();
         item.put("icon", R.drawable.user);
@@ -98,7 +112,7 @@ public class MainActivity extends Activity {
     }
 
     private void switchContent(int view_id){
-        if(view_id >VIEW_PROFESSORS || view_id < VIEW_PROFESSORS) return;
+        if(view_id >= LOG_OUT || view_id < VIEW_PROFESSORS) return;
         title.setText(view_names[view_id]);
         if(content != null) {
             content.clear(); //Clear existing content firstly
@@ -207,6 +221,9 @@ public class MainActivity extends Activity {
                     case VIEW_PROFESSORS:
                         data.put("professors", Professor.getAllProfessors());
                         break;
+                    case PROFILE:
+                        Credential.loadCurrentUser();
+                        break;
                     default:
                         break;
                 }
@@ -238,6 +255,9 @@ public class MainActivity extends Activity {
                 switch((Integer)data.get("type")) {
                     case VIEW_PROFESSORS:
                         activity.content = new ViewProfessors(activity, activity.content_layout, (List<Professor>) data.get("professors"));
+                        break;
+                    case PROFILE:
+                        activity.content = new ViewProfile(activity, activity.content_layout);
                         break;
                     default:
                         break;

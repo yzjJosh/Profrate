@@ -8,13 +8,15 @@ import com.josh.profrate.elements.Credential;
 
 public class UserTest extends ApplicationTestCase<Application> {
 
+    private final String account = "yangzijiangjosh@gmail.com";
+
     public UserTest(){
         super(Application.class);
     }
 
     @Override
     public void setUp(){
-        Credential.login("yangzijiangjosh@gmail.com", getContext());
+        Credential.login(account, getContext());
     }
 
     @Override
@@ -23,10 +25,9 @@ public class UserTest extends ApplicationTestCase<Application> {
     }
 
     public void testUser() throws Exception{
-        assertTrue(User.createUser("Zijiang Yang", null));
-        User user = User.getUser("yangzijiangjosh@gmail.com");
+        User user = User.getUser(account);
         assertNotNull(user);
-        assertEquals(user.name, "Zijiang Yang");
+        assertTrue(user.editName("Fuck!!!"));
     }
 
 }

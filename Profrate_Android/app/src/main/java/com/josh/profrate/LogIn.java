@@ -2,6 +2,7 @@ package com.josh.profrate;
 
 import android.accounts.AccountManager;
 import android.app.Activity;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -14,17 +15,23 @@ import com.google.android.gms.auth.GoogleAuthUtil;
 import com.google.android.gms.common.AccountPicker;
 import com.josh.profrate.elements.Credential;
 
+import java.io.IOException;
+
 public class LogIn extends Activity {
 
     private final static int ACTIVITY_RESULT_FROM_ACCOUNT_SELECTION = 0;
     private boolean isLoggingIn = false;
     private LogInHandler logInHandler = new LogInHandler(this);
+    private Dialog processingDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if(Credential.isLoggedIn()) {
-            startActivity(new Intent(this, MainActivity.class).putExtra("view", MainActivity.VIEW_PROFESSORS));
+            if(Credential.getCurrentUser() != null)
+                startActivity(new Intent(this, MainActivity.class).putExtra("view", MainActivity.VIEW_PROFESSORS));
+            else
+                startActivity(new Intent(this, CreateUserActivity.class));
             finish();
             return;
         }
@@ -41,12 +48,21 @@ public class LogIn extends Activity {
     }
 
     private void performLogIn(final String email){
+        processingDialog = new Dialog(this, R.style.theme_processing_dialog);
+        processingDialog.setContentView(R.layout.processing_dialog);
+        processingDialog.setCancelable(false);
+        processingDialog.show();
         new Thread(){
             @Override
             public void run(){
                 if(isLoggingIn) return;
                 isLoggingIn = true;
                 Credential.login(email, LogIn.this);
+                try {
+                    Credential.loadCurrentUser();
+                }catch (IOException e){
+                    e.printStackTrace();
+                }
                 isLoggingIn = false;
                 logInHandler.sendMessage(new Message());
             }
@@ -69,8 +85,12 @@ public class LogIn extends Activity {
         }
         @Override
         public void handleMessage(Message msg){
+            ((LogIn)context).processingDialog.dismiss();
             if(Credential.isLoggedIn()) {
-                context.startActivity(new Intent(context, MainActivity.class).putExtra("view", MainActivity.VIEW_PROFESSORS));
+                if(Credential.getCurrentUser() != null)
+                    context.startActivity(new Intent(context, MainActivity.class).putExtra("view", MainActivity.VIEW_PROFESSORS));
+                else
+                    context.startActivity(new Intent(context, CreateUserActivity.class));
                 ((Activity)context).finish();
             }
             else

@@ -26,7 +26,6 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.josh.profrate.MainActivity;
 import com.josh.profrate.R;
 import com.josh.profrate.dataStructures.User;
 import com.josh.profrate.elements.Credential;
@@ -59,13 +58,17 @@ public class ViewProfile extends ViewContent {
     private TaskHandler handler;
     private boolean isActive;
     private ImageView photo;
+    private TextView name_text;
     private String photo_path;
     private String name;
+    private Dialog processingDialog;
+    private boolean isUploadingPhoto = false;
+    private boolean isEditingName = false;
 
     public ViewProfile(Context context, ViewGroup parentLayout){
         super(context, parentLayout);
         isActive = false;
-        handler = new TaskHandler(context);
+        handler = new TaskHandler(context, this);
     }
 
     @Override
@@ -73,7 +76,8 @@ public class ViewProfile extends ViewContent {
         final LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         inflater.inflate(R.layout.view_profile, parentLayout, true);
         User user = Credential.getCurrentUser();
-        ((TextView)parentLayout.findViewById(R.id.name)).setText(user.name);
+        name_text = (TextView)parentLayout.findViewById(R.id.name);
+        name_text.setText(user.name);
         ((TextView)parentLayout.findViewById(R.id.email)).setText(user.email);
         photo = (ImageView) parentLayout.findViewById(R.id.photo);
         photo.setImageBitmap(Credential.getCurrentUserPhoto());
@@ -157,7 +161,7 @@ public class ViewProfile extends ViewContent {
     private View.OnClickListener onPhotoClick = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            final Dialog dialog = new Dialog(context, R.style.theme_pic_source_selection);
+            final Dialog dialog = new Dialog(context, R.style.theme_dialog);
             dialog.setContentView(R.layout.select_picture_source);
             dialog.findViewById(R.id.select_source_gallery).setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -196,15 +200,15 @@ public class ViewProfile extends ViewContent {
             lp.setMarginStart(200);
             lp.setMarginEnd(200);
             input.setLayoutParams(lp);
-            input.setText(name);
+            input.setSingleLine();
+            input.setText(name_text.getText());
             alertDialog.setView(input);
             alertDialog.setIcon(R.drawable.edit);
 
             alertDialog.setPositiveButton("OK",
                     new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int which) {
-                            name = input.getText().toString();
-                            ((TextView)parentLayout.findViewById(R.id.name)).setText(name);
+                            name_text.setText(input.getText().toString());
                         }
                     });
 
@@ -224,6 +228,21 @@ public class ViewProfile extends ViewContent {
         public void onClick(View v) {
             if(name.length() == 0)
                 Toast.makeText(context, "Please enter a user name!", Toast.LENGTH_SHORT).show();
+            String cur_name = name_text.getText().toString();
+            if(!cur_name.equals(name)) {
+                isEditingName = true;
+                new EditUserNameThread(cur_name).start();
+            }
+            if(photo_path != null) {
+                isUploadingPhoto = true;
+                new UploadPhotoThread(photo_path).start();
+            }
+            if(isEditingName || isUploadingPhoto){
+                processingDialog = new Dialog(context, R.style.theme_dialog);
+                processingDialog.setContentView(R.layout.processing_dialog);
+                processingDialog.setCancelable(false);
+                processingDialog.show();
+            }
         }
     };
 
@@ -259,15 +278,13 @@ public class ViewProfile extends ViewContent {
 
     }
 
-    private static class UploadPhotoThread extends Thread{
+    private class UploadPhotoThread extends Thread{
 
         private static final String TAG = "UploadThread";
         private final String path;
-        private final Handler handler;
 
-        public UploadPhotoThread(String path, Handler handler){
+        public UploadPhotoThread(String path){
             this.path = path;
-            this.handler = handler;
         }
 
         @Override
@@ -289,10 +306,11 @@ public class ViewProfile extends ViewContent {
                 HttpResponse response = httpClient.execute(httppost, localContext);
                 Log.i(TAG, response.getStatusLine().toString());
                 BufferedReader reader = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
-                String line = null;
-                while ((line = reader.readLine()) != null)
-                    Log.i(TAG, line);
-                data.put("success", true);
+                String line = reader.readLine();
+                if(line.equals("success") && Credential.loadCurrentUser())
+                    data.put("success", true);
+                else
+                    data.put("success", false);
             }catch (Exception e){
                 e.printStackTrace();
                 data.put("success", false);
@@ -305,9 +323,11 @@ public class ViewProfile extends ViewContent {
     public static class TaskHandler extends Handler {
 
         private final Context context;
+        private final ViewProfile content;
 
-        public TaskHandler(Context contex){
+        public TaskHandler(Context contex, ViewProfile content){
             this.context = contex;
+            this.content = content;
         }
 
         @Override
@@ -317,8 +337,22 @@ public class ViewProfile extends ViewContent {
             int type = (int)data.get("type");
             switch (type){
                 case TASK_EDIT_USER_NAME:
+                    content.isEditingName = false;
+                    if(!content.isUploadingPhoto)
+                        content.processingDialog.dismiss();
+                    if(!(Boolean)data.get("success")){
+                        if("Server rejection".equals(data.get("reason")))
+                            Toast.makeText(context, "Name \""+data.get("name")+"\" is already used! Please use another name!", Toast.LENGTH_LONG).show();
+                        else
+                            Toast.makeText(context, "Unable to connect Internet, please try again!", Toast.LENGTH_LONG).show();
+                    }
                     break;
                 case TASK_UPLOAD_PHOTO:
+                    content.isUploadingPhoto = false;
+                    if(!content.isEditingName)
+                        content.processingDialog.dismiss();
+                    if(!(Boolean)data.get("success"))
+                        Toast.makeText(context, "Unable to upload photo!", Toast.LENGTH_LONG).show();
                     break;
                 default:
                     break;

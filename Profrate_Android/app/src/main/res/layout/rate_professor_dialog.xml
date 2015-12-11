@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_width="350dp"
+    android:layout_height="wrap_content"
+    android:padding="10dp"
+    android:background="@color/white"
+    android:gravity="center">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:textStyle="bold"
+        android:textSize="20sp"
+        android:textColor="@color/dark_blue"
+        android:text="Tap the star to rate"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginTop="15dp">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.4"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            android:textColor="@color/black"
+            android:text="Personality:"/>
+
+        <com.josh.profrate.elements.RatingStar
+            android:id="@+id/rating_personality"
+            android:layout_width="0dp"
+            android:layout_height="30dp"
+            android:layout_weight="0.6"
+            app:ratable="true"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginTop="10dp">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.4"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            android:textColor="@color/black"
+            android:text="Teaching skill:"/>
+
+        <com.josh.profrate.elements.RatingStar
+            android:id="@+id/rating_teaching_skill"
+            android:layout_width="0dp"
+            android:layout_height="30dp"
+            android:layout_weight="0.6"
+            app:ratable="true"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginTop="10dp">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.4"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            android:textColor="@color/black"
+            android:text="Research skill:"/>
+
+        <com.josh.profrate.elements.RatingStar
+            android:id="@+id/rating_research_skill"
+            android:layout_width="0dp"
+            android:layout_height="30dp"
+            android:layout_weight="0.6"
+            app:ratable="true"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginTop="10dp">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.4"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            android:textColor="@color/black"
+            android:text="Knowledge level:"/>
+
+        <com.josh.profrate.elements.RatingStar
+            android:id="@+id/rating_knowledge_level"
+            android:layout_width="0dp"
+            android:layout_height="30dp"
+            android:layout_weight="0.6"
+            app:ratable="true"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="15dp"
+        android:orientation="horizontal"
+        android:gravity="center">
+
+        <TextView
+            android:id="@+id/ok_btn"
+            android:layout_width="100dp"
+            android:layout_height="25dp"
+            android:gravity="center"
+            android:textColor="@color/black"
+            android:background="@drawable/primary_color_border_btn_background"
+            android:text="OK"/>
+
+        <TextView
+            android:id="@+id/cancel_btn"
+            android:layout_width="100dp"
+            android:layout_height="25dp"
+            android:layout_marginStart="50dp"
+            android:gravity="center"
+            android:textColor="@color/black"
+            android:background="@drawable/primary_color_border_btn_background"
+            android:text="Cancel"/>
+
+    </LinearLayout>
+
+</LinearLayout>

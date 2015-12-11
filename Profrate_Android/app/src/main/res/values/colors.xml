@@ -7,6 +7,7 @@
     <color name="white">#FFFFFF</color>
     <color name="black">#000000</color>
     <color name="gray">#baafaf</color>
+    <color name="blue">#03a6ec</color>
     <color name="dark_blue">#046b97</color>
     <color name="menu_selected">#e9e7e7</color>
     <color name="proflist_selected">#ccc9c9</color>

@@ -2,8 +2,15 @@ package com.josh.profrate.viewContents;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.os.Parcelable;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentStatePagerAdapter;
+import android.support.v4.view.ViewPager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,6 +30,7 @@ import com.josh.profrate.dataStructures.Professor;
 import com.josh.profrate.dataStructures.User;
 import com.josh.profrate.elements.BitmapFetcher;
 import com.josh.profrate.elements.Credential;
+import com.josh.profrate.elements.RatingStar;
 import com.josh.profrate.elements.TimeConverter;
 
 import java.io.IOException;
@@ -33,13 +41,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class CommentsAndArticlesView extends ViewContent {
+public class CommentsAndArticlesView extends ViewContent{
 
     private static final int TASK_LOAD_PHOTO = 0;
     private static final int TASK_TOGGLE_LIKE = 1;
     private static final int TASK_TOGGLE_DISLIKE = 2;
 
     private final Professor professor;
+    private final Bitmap photo;
     private final List<Object> items;
     private final Map<Long, List<CommentReply>> commentReplies;
     private final Map<Long, List<Comment>> articleComments;
@@ -72,7 +81,7 @@ public class CommentsAndArticlesView extends ViewContent {
 
     public CommentsAndArticlesView(Context context, ViewGroup parentLayout, Professor professor,
                                    List<Comment> comments, List<Article> articles, Map<Long, List<CommentReply>> commentReplies,
-                                   Map<Long, List<Comment>> articleComments, Map<String, User> users) {
+                                   Map<Long, List<Comment>> articleComments, Map<String, User> users, Bitmap photo) {
         super(context, parentLayout);
         this.professor = professor;
         this.items = new ArrayList<Object>();
@@ -80,6 +89,7 @@ public class CommentsAndArticlesView extends ViewContent {
         this.commentReplies = commentReplies;
         this.articleComments = articleComments;
         this.users = users;
+        this.photo = photo;
         items.addAll(comments);
         items.addAll(articles);
         Collections.sort(items, comparator);
@@ -89,14 +99,18 @@ public class CommentsAndArticlesView extends ViewContent {
 
     @Override
     public void show() {
-        ListView listView = new ListView(context);
+        /*ListView listView = new ListView(context);
         LayoutParams params = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
         listView.setLayoutParams(params);
         listView.setAdapter(new CommentListAdapter());
         listView.setDividerHeight(30);
         listView.setVerticalScrollBarEnabled(false);
         listView.setSelector(android.R.color.transparent);
-        parentLayout.addView(listView);
+        parentLayout.addView(listView);*/
+        final LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        inflater.inflate(R.layout.comment_item_professor, parentLayout, true);
+        ViewPager pager = (ViewPager) parentLayout.findViewById(R.id.comments_pager);
+        pager.setAdapter(new TabPagerAdapter(((FragmentActivity)context).getSupportFragmentManager()));
         isActive = true;
     }
 
@@ -109,6 +123,40 @@ public class CommentsAndArticlesView extends ViewContent {
     @Override
     public boolean isActive() {
         return isActive;
+    }
+
+    private class TabPagerAdapter extends FragmentStatePagerAdapter {
+
+
+        public TabPagerAdapter(FragmentManager fm) {
+            super(fm);
+        }
+
+        @Override
+        public Fragment getItem(int position) {
+            return new CommentTab();
+        }
+
+        @Override
+        public int getCount() {
+            return 2;
+        }
+
+        @Override
+        public CharSequence getPageTitle(int position){
+            if(position == 0)
+                return "Comments";
+            else
+                return "Articles";
+        }
+    }
+
+    public static class CommentTab extends Fragment{
+
+        @Override
+        public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+            return new ListView(getContext());
+        }
     }
 
     private class CommentBtnListener implements View.OnClickListener{
@@ -184,26 +232,35 @@ public class CommentsAndArticlesView extends ViewContent {
 
     private class CommentListAdapter extends BaseAdapter {
 
+        private static final int TYPE_PROFESSOR = 0;
+        private static final int TYPE_COMMENT = 1;
+        private static final int TYPE_ARTICLE = 2;
+
         @Override
         public int getCount() {
-            return items.size();
+            return items.size() + 1;
         }
 
         @Override
         public Object getItem(int position) {
-            return items.get(position);
+            if(getItemViewType(position) == TYPE_PROFESSOR)
+                return professor;
+            return items.get(position - 1);
         }
 
         @Override
         public int getItemViewType(int position){
-            Object item = items.get(position);
-            if(item instanceof Comment) return 0;
-            else return 1;
+            if(position == 0) return TYPE_PROFESSOR;
+            Object item = items.get(position-1);
+            if(item instanceof Comment) return TYPE_COMMENT;
+            else return TYPE_ARTICLE;
         }
 
         @Override
         public long getItemId(int position) {
-            if(getItemViewType(position) == 0)
+            if(getItemViewType(position) == TYPE_PROFESSOR)
+                return ((Professor)getItem(position)).id;
+            else if(getItemViewType(position) == TYPE_COMMENT)
                 return ((Comment)getItem(position)).id;
             else
                 return ((Article)getItem(position)).id;
@@ -211,7 +268,7 @@ public class CommentsAndArticlesView extends ViewContent {
 
         @Override
         public int getViewTypeCount(){
-            return 2;
+            return 3;
         }
 
         @Override
@@ -221,132 +278,150 @@ public class CommentsAndArticlesView extends ViewContent {
             int type = getItemViewType(position);
             if (convertView == null) {
                 holder = new ViewHolder();
-                if(type == 0) {
-                    convertView = inflater.inflate(R.layout.comment_item, parent, false);
-                    holder.content = (TextView) convertView.findViewById(R.id.comment);
-                }else{
-                    convertView = inflater.inflate(R.layout.article_item, parent, false);
-                    holder.content = (TextView) convertView.findViewById(R.id.content);
-                    holder.title = (TextView) convertView.findViewById(R.id.title);
+                if(type == TYPE_PROFESSOR){
+                    convertView = inflater.inflate(R.layout.comment_item_professor, parent, false);
+                }else {
+                    if (type == TYPE_COMMENT) {
+                        convertView = inflater.inflate(R.layout.comment_item, parent, false);
+                        holder.content = (TextView) convertView.findViewById(R.id.comment);
+                    } else {
+                        convertView = inflater.inflate(R.layout.article_item, parent, false);
+                        holder.content = (TextView) convertView.findViewById(R.id.content);
+                        holder.title = (TextView) convertView.findViewById(R.id.title);
+                    }
+                    holder.user_name = (TextView) convertView.findViewById(R.id.user_name);
+                    holder.user_photo = (ImageView) convertView.findViewById(R.id.user_photo);
+                    holder.user_photo_progress_bar = convertView.findViewById(R.id.user_photo_progress_bar);
+                    holder.user_photo_area = convertView.findViewById(R.id.user_photo_area);
+                    holder.comment_btn = convertView.findViewById(R.id.comment_btn);
+                    holder.like_btn = convertView.findViewById(R.id.like_btn);
+                    holder.dislike_btn = convertView.findViewById(R.id.dislike_btn);
+                    holder.like_icon = (ImageView) convertView.findViewById(R.id.like_icon);
+                    holder.dislike_icon = (ImageView) convertView.findViewById(R.id.dislike_icon);
+                    holder.like_num = (TextView) convertView.findViewById(R.id.like_num);
+                    holder.dislike_num = (TextView) convertView.findViewById(R.id.dislike_num);
+                    holder.comment_num = (TextView) convertView.findViewById(R.id.comment_num);
+                    holder.ellipsis = (TextView) convertView.findViewById(R.id.ellipsis);
+                    holder.reply_list = (LinearLayout) convertView.findViewById(R.id.reply_list);
+                    holder.time = (TextView) convertView.findViewById(R.id.time);
+                    holder.reply_items = new ArrayList<View>();
+                    for (int i = 0; i < ViewHolder.MAX_REPLY_NUM; i++)
+                        holder.reply_items.add(inflater.inflate(R.layout.comment_reply_item, holder.reply_list, false));
                 }
-                holder.user_name = (TextView) convertView.findViewById(R.id.user_name);
-                holder.user_photo = (ImageView) convertView.findViewById(R.id.user_photo);
-                holder.user_photo_progress_bar = convertView.findViewById(R.id.user_photo_progress_bar);
-                holder.user_photo_area = convertView.findViewById(R.id.user_photo_area);
-                holder.comment_btn = convertView.findViewById(R.id.comment_btn);
-                holder.like_btn = convertView.findViewById(R.id.like_btn);
-                holder.dislike_btn = convertView.findViewById(R.id.dislike_btn);
-                holder.like_icon = (ImageView) convertView.findViewById(R.id.like_icon);
-                holder.dislike_icon = (ImageView) convertView.findViewById(R.id.dislike_icon);
-                holder.like_num = (TextView) convertView.findViewById(R.id.like_num);
-                holder.dislike_num = (TextView) convertView.findViewById(R.id.dislike_num);
-                holder.comment_num = (TextView) convertView.findViewById(R.id.comment_num);
-                holder.ellipsis = (TextView) convertView.findViewById(R.id.ellipsis);
-                holder.reply_list = (LinearLayout) convertView.findViewById(R.id.reply_list);
-                holder.time = (TextView) convertView.findViewById(R.id.time);
-                holder.reply_items = new ArrayList<View>();
-                for(int i=0; i<ViewHolder.MAX_REPLY_NUM; i++)
-                    holder.reply_items.add(inflater.inflate(R.layout.comment_reply_item, holder.reply_list, false));
                 convertView.setTag(holder);
             }else
                 holder = (ViewHolder)convertView.getTag();
             holder.position = position;
-            if(type == 0){
-                Comment comment = (Comment) getItem(position);
-                User author = users.get(comment.author_email);
-                holder.user_name.setText(author.name);
-                holder.content.setText(comment.content);
-                holder.time.setText(TimeConverter.convertTime(comment.time));
-                holder.like_num.setText(comment.liked_by.size() + "");
-                holder.dislike_num.setText(comment.disliked_by.size() + "");
-                holder.comment_num.setText(comment.reply_num+"");
-                if(comment.liked_by.contains(Credential.getCredential().getSelectedAccountName()))
-                    holder.like_icon.setImageResource(R.drawable.like_colored);
+            if(type == TYPE_PROFESSOR){
+                if(photo != null)
+                    ((ImageView)convertView.findViewById(R.id.professor_photo)).setImageBitmap(photo);
                 else
-                    holder.like_icon.setImageResource(R.drawable.like_bw);
-                if(comment.disliked_by.contains(Credential.getCredential().getSelectedAccountName()))
-                    holder.dislike_icon.setImageResource(R.drawable.dislike_colored);
+                    ((ImageView)convertView.findViewById(R.id.professor_photo)).setImageResource(R.drawable.default_user_photo);
+                ((TextView)convertView.findViewById(R.id.professor_name)).setText(professor.name);
+                ((TextView)convertView.findViewById(R.id.professor_title)).setText(professor.title);
+                if(professor.special_title != null)
+                    ((TextView)convertView.findViewById(R.id.professor_special_title)).setText(professor.special_title);
                 else
-                    holder.dislike_icon.setImageResource(R.drawable.dislike_bw);
-                holder.user_photo.setImageBitmap(null);
-                holder.user_photo.setVisibility(View.GONE);
-                holder.user_photo_progress_bar.setVisibility(View.VISIBLE);
-                new LoadPhotoThread(author.photo_url, holder.user_photo_area, holder).start();
-                holder.reply_list.removeAllViews();
-                List<CommentReply> replies = commentReplies.get(comment.id);
-                int count = 0;
-                for(CommentReply reply: replies){
-                    if(count == ViewHolder.MAX_REPLY_NUM) break;
-                    User user = users.get(reply.author_email);
-                    View reply_item = holder.reply_items.get(count);
-                    ((TextView)reply_item.findViewById(R.id.user_name)).setText(user.name);
-                    ((TextView)reply_item.findViewById(R.id.replyToName)).setText(author.name);
-                    ((TextView)reply_item.findViewById(R.id.comment)).setText(reply.content);
-                    ((TextView)reply_item.findViewById(R.id.time)).setText(TimeConverter.convertTime(reply.time));
-                    View photoArea = reply_item.findViewById(R.id.user_photo_area);
-                    ((ImageView)photoArea.findViewById(R.id.user_photo)).setImageBitmap(null);
-                    photoArea.findViewById(R.id.user_photo).setVisibility(View.GONE);
-                    photoArea.findViewById(R.id.user_photo_progress_bar).setVisibility(View.VISIBLE);
-                    new LoadPhotoThread(user.photo_url, photoArea, holder).start();
-                    holder.reply_list.addView(reply_item);
-                    count ++;
+                    convertView.findViewById(R.id.professor_special_title).setVisibility(View.GONE);
+                ((RatingStar)convertView.findViewById(R.id.professor_rating)).setRating(professor.overall_rating.overallRating());
+            }else {
+                if (type == TYPE_COMMENT) {
+                    Comment comment = (Comment) getItem(position);
+                    User author = users.get(comment.author_email);
+                    holder.user_name.setText(author.name);
+                    holder.content.setText(comment.content);
+                    holder.time.setText(TimeConverter.convertTime(comment.time));
+                    holder.like_num.setText(comment.liked_by.size() + "");
+                    holder.dislike_num.setText(comment.disliked_by.size() + "");
+                    holder.comment_num.setText(comment.reply_num + "");
+                    if (comment.liked_by.contains(Credential.getCredential().getSelectedAccountName()))
+                        holder.like_icon.setImageResource(R.drawable.like_colored);
+                    else
+                        holder.like_icon.setImageResource(R.drawable.like_bw);
+                    if (comment.disliked_by.contains(Credential.getCredential().getSelectedAccountName()))
+                        holder.dislike_icon.setImageResource(R.drawable.dislike_colored);
+                    else
+                        holder.dislike_icon.setImageResource(R.drawable.dislike_bw);
+                    holder.user_photo.setImageBitmap(null);
+                    holder.user_photo.setVisibility(View.GONE);
+                    holder.user_photo_progress_bar.setVisibility(View.VISIBLE);
+                    new LoadPhotoThread(author.photo_url, holder.user_photo_area, holder).start();
+                    holder.reply_list.removeAllViews();
+                    List<CommentReply> replies = commentReplies.get(comment.id);
+                    int count = 0;
+                    for (CommentReply reply : replies) {
+                        if (count == ViewHolder.MAX_REPLY_NUM) break;
+                        User user = users.get(reply.author_email);
+                        View reply_item = holder.reply_items.get(count);
+                        ((TextView) reply_item.findViewById(R.id.user_name)).setText(user.name);
+                        ((TextView) reply_item.findViewById(R.id.replyToName)).setText(author.name);
+                        ((TextView) reply_item.findViewById(R.id.comment)).setText(reply.content);
+                        ((TextView) reply_item.findViewById(R.id.time)).setText(TimeConverter.convertTime(reply.time));
+                        View photoArea = reply_item.findViewById(R.id.user_photo_area);
+                        ((ImageView) photoArea.findViewById(R.id.user_photo)).setImageBitmap(null);
+                        photoArea.findViewById(R.id.user_photo).setVisibility(View.GONE);
+                        photoArea.findViewById(R.id.user_photo_progress_bar).setVisibility(View.VISIBLE);
+                        new LoadPhotoThread(user.photo_url, photoArea, holder).start();
+                        holder.reply_list.addView(reply_item);
+                        count++;
+                    }
+                } else {
+                    Article article = (Article) getItem(position);
+                    User author = users.get(article.author_email);
+                    holder.user_name.setText(author.name);
+                    holder.title.setText(article.title);
+                    holder.content.setText(article.content);
+                    holder.time.setText(TimeConverter.convertTime(article.time));
+                    holder.like_num.setText(article.liked_by.size() + "");
+                    holder.dislike_num.setText(article.disliked_by.size() + "");
+                    holder.comment_num.setText(article.comment_num + "");
+                    if (article.liked_by.contains(Credential.getCredential().getSelectedAccountName()))
+                        holder.like_icon.setImageResource(R.drawable.like_colored);
+                    else
+                        holder.like_icon.setImageResource(R.drawable.like_bw);
+                    if (article.disliked_by.contains(Credential.getCredential().getSelectedAccountName()))
+                        holder.dislike_icon.setImageResource(R.drawable.dislike_colored);
+                    else
+                        holder.dislike_icon.setImageResource(R.drawable.dislike_bw);
+                    holder.user_photo.setImageBitmap(null);
+                    holder.user_photo.setVisibility(View.GONE);
+                    holder.user_photo_progress_bar.setVisibility(View.VISIBLE);
+                    new LoadPhotoThread(author.photo_url, holder.user_photo_area, holder).start();
+                    holder.reply_list.removeAllViews();
+                    List<Comment> comments = articleComments.get(article.id);
+                    int count = 0;
+                    for (Comment comment : comments) {
+                        if (count == ViewHolder.MAX_REPLY_NUM) break;
+                        User user = users.get(comment.author_email);
+                        View reply_item = holder.reply_items.get(count);
+                        ((TextView) reply_item.findViewById(R.id.user_name)).setText(user.name);
+                        ((TextView) reply_item.findViewById(R.id.replyToName)).setText(author.name);
+                        ((TextView) reply_item.findViewById(R.id.comment)).setText(comment.content);
+                        ((TextView) reply_item.findViewById(R.id.time)).setText(TimeConverter.convertTime(comment.time));
+                        View photoArea = reply_item.findViewById(R.id.user_photo_area);
+                        ((ImageView) photoArea.findViewById(R.id.user_photo)).setImageBitmap(null);
+                        photoArea.findViewById(R.id.user_photo).setVisibility(View.GONE);
+                        photoArea.findViewById(R.id.user_photo_progress_bar).setVisibility(View.VISIBLE);
+                        new LoadPhotoThread(user.photo_url, photoArea, holder).start();
+                        holder.reply_list.addView(reply_item);
+                        count++;
+                    }
                 }
-            }else{
-                Article article = (Article) getItem(position);
-                User author = users.get(article.author_email);
-                holder.user_name.setText(author.name);
-                holder.title.setText(article.title);
-                holder.content.setText(article.content);
-                holder.time.setText(TimeConverter.convertTime(article.time));
-                holder.like_num.setText(article.liked_by.size() + "");
-                holder.dislike_num.setText(article.disliked_by.size() + "");
-                holder.comment_num.setText(article.comment_num+"");
-                if(article.liked_by.contains(Credential.getCredential().getSelectedAccountName()))
-                    holder.like_icon.setImageResource(R.drawable.like_colored);
-                else
-                    holder.like_icon.setImageResource(R.drawable.like_bw);
-                if(article.disliked_by.contains(Credential.getCredential().getSelectedAccountName()))
-                    holder.dislike_icon.setImageResource(R.drawable.dislike_colored);
-                else
-                    holder.dislike_icon.setImageResource(R.drawable.dislike_bw);
-                holder.user_photo.setImageBitmap(null);
-                holder.user_photo.setVisibility(View.GONE);
-                holder.user_photo_progress_bar.setVisibility(View.VISIBLE);
-                new LoadPhotoThread(author.photo_url, holder.user_photo_area, holder).start();
-                holder.reply_list.removeAllViews();
-                List<Comment> comments = articleComments.get(article.id);
-                int count = 0;
-                for(Comment comment: comments){
-                    if(count == ViewHolder.MAX_REPLY_NUM) break;
-                    User user = users.get(comment.author_email);
-                    View reply_item = holder.reply_items.get(count);
-                    ((TextView)reply_item.findViewById(R.id.user_name)).setText(user.name);
-                    ((TextView)reply_item.findViewById(R.id.replyToName)).setText(author.name);
-                    ((TextView)reply_item.findViewById(R.id.comment)).setText(comment.content);
-                    ((TextView)reply_item.findViewById(R.id.time)).setText(TimeConverter.convertTime(comment.time));
-                    View photoArea = reply_item.findViewById(R.id.user_photo_area);
-                    ((ImageView)photoArea.findViewById(R.id.user_photo)).setImageBitmap(null);
-                    photoArea.findViewById(R.id.user_photo).setVisibility(View.GONE);
-                    photoArea.findViewById(R.id.user_photo_progress_bar).setVisibility(View.VISIBLE);
-                    new LoadPhotoThread(user.photo_url, photoArea, holder).start();
-                    holder.reply_list.addView(reply_item);
-                    count ++;
-                }
+                holder.comment_btn.setOnClickListener(new CommentBtnListener(getItem(position)));
+                holder.like_btn.setOnClickListener(new LikeBtnListener(holder, getItem(position)));
+                holder.dislike_btn.setOnClickListener(new DislikeBtnListener(holder, getItem(position)));
+                final ViewHolder finalHolder = holder;
+                holder.ellipsis.setVisibility(View.GONE);
+                holder.content.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        int lines = finalHolder.content.getLineCount();
+                        if (lines > 0 && finalHolder.position == position)
+                            if (finalHolder.content.getLayout().getEllipsisCount(lines - 1) > 0)
+                                finalHolder.ellipsis.setVisibility(View.VISIBLE);
+                    }
+                });
             }
-            holder.comment_btn.setOnClickListener(new CommentBtnListener(getItem(position)));
-            holder.like_btn.setOnClickListener(new LikeBtnListener(holder, getItem(position)));
-            holder.dislike_btn.setOnClickListener(new DislikeBtnListener(holder, getItem(position)));
-            final ViewHolder finalHolder = holder;
-            holder.ellipsis.setVisibility(View.GONE);
-            holder.content.post(new Runnable() {
-                @Override
-                public void run() {
-                    int lines = finalHolder.content.getLineCount();
-                    if (lines > 0 && finalHolder.position == position)
-                        if (finalHolder.content.getLayout().getEllipsisCount(lines - 1) > 0)
-                            finalHolder.ellipsis.setVisibility(View.VISIBLE);
-                }
-            });
             return convertView;
         }
     }
@@ -517,7 +592,7 @@ public class CommentsAndArticlesView extends ViewContent {
                     ImageView image = (ImageView) photoArea.findViewById(R.id.user_photo);
                     image.setVisibility(View.VISIBLE);
                     if(bitmap == null)
-                        image.setImageResource(R.drawable.error);
+                        image.setImageResource(R.drawable.default_user_photo);
                     else
                         image.setImageBitmap(bitmap);
                     break;

@@ -144,7 +144,6 @@ public class ViewProfessors extends ViewContent {
         public View like_btn;
         public View dislike_btn;
         public View progress_bar;
-        public View error_message;
         public ImageView photo;
         public TextView name;
         public TextView title;
@@ -188,7 +187,6 @@ public class ViewProfessors extends ViewContent {
                 holder.like_btn = convertView.findViewById(R.id.like_btn);
                 holder.dislike_btn = convertView.findViewById(R.id.dislike_btn);
                 holder.progress_bar = convertView.findViewById(R.id.professor_photo_progress_bar);
-                holder.error_message = convertView.findViewById(R.id.professor_photo_error);
                 holder.name = (TextView)convertView.findViewById(R.id.name);
                 holder.title = (TextView)convertView.findViewById(R.id.title);
                 holder.rating = (RatingStar)convertView.findViewById(R.id.rating);
@@ -209,7 +207,6 @@ public class ViewProfessors extends ViewContent {
             holder.dislike_btn.setOnClickListener(new DislikeBtnListener(professor, holder));
             holder.photo_area.setOnClickListener(new PhotoClickListener(professor));
             holder.progress_bar.setVisibility(View.VISIBLE);
-            holder.error_message.setVisibility(View.GONE);
             holder.photo.setImageBitmap(null);
             holder.photo.setVisibility(View.GONE);
             holder.name.setText(professor.name);
@@ -363,12 +360,11 @@ public class ViewProfessors extends ViewContent {
                     Bitmap bitmap = (Bitmap) data.get("bitmap");
                     if(position != holder.position) return;
                     holder.progress_bar.setVisibility(View.GONE);
-                    if(bitmap != null){
-                        holder.photo.setVisibility(View.VISIBLE);
+                    holder.photo.setVisibility(View.VISIBLE);
+                    if(bitmap != null)
                         holder.photo.setImageBitmap(bitmap);
-                    }else{
-                        holder.error_message.setVisibility(View.VISIBLE);
-                    }
+                    else
+                        holder.photo.setImageResource(R.drawable.default_user_photo);
                     break;
                 case TASK_TOGGLE_LIKE:
                     content.isTogglingLikeness[position] = false;

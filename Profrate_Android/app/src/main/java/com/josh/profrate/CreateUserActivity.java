@@ -79,7 +79,7 @@ public class CreateUserActivity extends Activity {
             Toast.makeText(this, "Please enter a user name!", Toast.LENGTH_SHORT).show();
             return;
         }
-        processingDialog = new Dialog(this, R.style.theme_processing_dialog);
+        processingDialog = new Dialog(this, R.style.theme_dialog);
         processingDialog.setContentView(R.layout.processing_dialog);
         processingDialog.setCancelable(false);
         processingDialog.show();
@@ -87,7 +87,7 @@ public class CreateUserActivity extends Activity {
     }
 
     public void onAddPhotoBtnClick(View v){
-        final Dialog dialog = new Dialog(this, R.style.theme_pic_source_selection);
+        final Dialog dialog = new Dialog(this, R.style.theme_dialog);
         dialog.setContentView(R.layout.select_picture_source);
         dialog.findViewById(R.id.select_source_gallery).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -235,10 +235,11 @@ public class CreateUserActivity extends Activity {
                 HttpResponse response = httpClient.execute(httppost, localContext);
                 Log.i(TAG, response.getStatusLine().toString());
                 BufferedReader reader = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
-                String line = null;
-                while ((line = reader.readLine()) != null)
-                    Log.i(TAG, line);
-                data.put("success", true);
+                String line = reader.readLine();
+                if(line.equals("success") && Credential.loadCurrentUser())
+                    data.put("success", true);
+                else
+                    data.put("success", false);
             }catch (Exception e){
                 e.printStackTrace();
                 data.put("success", false);

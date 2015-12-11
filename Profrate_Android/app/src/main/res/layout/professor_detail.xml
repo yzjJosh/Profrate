@@ -1,0 +1,502 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:scrollbars="none"
+    android:fillViewport="false">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Basic Information:"
+            android:textStyle="bold"
+            android:textSize="18sp"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:orientation="vertical"
+            android:background="@drawable/professor_detail_field_background"
+            android:padding="10dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <ImageView
+                    android:id="@+id/professor_photo"
+                    android:layout_width="150dp"
+                    android:layout_height="150dp"
+                    android:src="@drawable/error"/>
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="5dp"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/professor_name"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:textSize="25sp"
+                        android:textStyle="bold"
+                        android:text="Adnan Aziz"/>
+
+                    <TextView
+                        android:id="@+id/professor_title"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="5dp"
+                        android:text="Professor"
+                        android:textSize="15sp"/>
+
+                    <TextView
+                        android:id="@+id/professor_special_title"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="5dp"
+                        android:textStyle="italic"
+                        android:text="Founder of Google"
+                        android:textSize="15sp"/>
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/professor_office_area"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0.4"
+                    android:text="Office:"
+                    android:textStyle="bold"
+                    android:textSize="13sp"/>
+
+                <TextView
+                    android:id="@+id/professor_office"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0.6"
+                    android:textSize="13sp"
+                    android:text="POB 3.201"/>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/professor_phone_area"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0.4"
+                    android:textStyle="bold"
+                    android:textSize="13sp"
+                    android:text="Phone:"/>
+
+                <TextView
+                    android:id="@+id/professor_phone"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0.6"
+                    android:textSize="13sp"
+                    android:clickable="true"
+                    android:textColor="@color/blue"
+                    android:background="@drawable/link_background"
+                    android:text="(512) 605 - 8167"/>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/professor_email_area"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0.4"
+                    android:textStyle="bold"
+                    android:textSize="13sp"
+                    android:text="Email:"/>
+
+                <TextView
+                    android:id="@+id/professor_email"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0.6"
+                    android:textSize="13sp"
+                    android:clickable="true"
+                    android:textColor="@color/blue"
+                    android:background="@drawable/link_background"
+                    android:text="yzjjosh@utexas.edu"/>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/professor_personal_website_area"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0.4"
+                    android:textStyle="bold"
+                    android:textSize="13sp"
+                    android:text="Personal website:"/>
+
+                <TextView
+                    android:id="@+id/professor_personal_website"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0.6"
+                    android:textSize="13sp"
+                    android:textColor="@color/blue"
+                    android:clickable="true"
+                    android:background="@drawable/link_background"
+                    android:text="www.google.com"/>
+
+            </LinearLayout>
+
+            <include
+                layout="@layout/comment_tool_bar"
+                android:layout_width="match_parent"
+                android:layout_height="20dp"
+                android:layout_marginTop="20dp" />
+
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="Rating:"
+            android:textStyle="bold"
+            android:textSize="18sp"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:orientation="vertical"
+            android:background="@drawable/professor_detail_field_background"
+            android:padding="10dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginTop="5dp">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0.4"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    android:text="Personality:"/>
+
+                <com.josh.profrate.elements.RatingStar
+                    android:id="@+id/rating_personality"
+                    android:layout_width="0dp"
+                    android:layout_height="20dp"
+                    android:layout_weight="0.6"/>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginTop="5dp">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0.4"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    android:text="Teaching skill:"/>
+
+                <com.josh.profrate.elements.RatingStar
+                    android:id="@+id/rating_teaching_skill"
+                    android:layout_width="0dp"
+                    android:layout_height="20dp"
+                    android:layout_weight="0.6"/>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginTop="5dp">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0.4"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    android:text="Research skill:"/>
+
+                <com.josh.profrate.elements.RatingStar
+                    android:id="@+id/rating_research_skill"
+                    android:layout_width="0dp"
+                    android:layout_height="20dp"
+                    android:layout_weight="0.6"/>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginTop="5dp">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0.4"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    android:text="Knowledge level:"/>
+
+                <com.josh.profrate.elements.RatingStar
+                    android:id="@+id/rating_knowledge_level"
+                    android:layout_width="0dp"
+                    android:layout_height="20dp"
+                    android:layout_weight="0.6"/>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginTop="5dp">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0.4"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    android:text="Overall:"/>
+
+                <com.josh.profrate.elements.RatingStar
+                    android:id="@+id/rating_overall"
+                    android:layout_width="0dp"
+                    android:layout_height="20dp"
+                    android:layout_weight="0.6"/>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginTop="5dp">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0.4"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    android:text="My rating:"/>
+
+                <com.josh.profrate.elements.RatingStar
+                    android:id="@+id/my_rating"
+                    android:layout_width="0dp"
+                    android:layout_height="20dp"
+                    android:layout_weight="0.6"
+                    android:visibility="gone"/>
+
+                <TextView
+                    android:id="@+id/my_rating_not_available"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0.6"
+                    android:gravity="center"
+                    android:textColor="@color/gray"
+                    android:text="Not available"/>
+
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/rate_btn"
+                android:layout_width="200dp"
+                android:layout_height="25dp"
+                android:layout_marginTop="10dp"
+                android:clickable="true"
+                android:background="@drawable/primary_color_border_btn_background"
+                android:gravity="center"
+                android:layout_gravity="center"
+                android:text="Rate"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/introduction_area"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="Introduction:"
+                android:textStyle="bold"
+                android:textSize="18sp"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:orientation="vertical"
+                android:background="@drawable/professor_detail_field_background"
+                android:padding="10dp">
+
+                <TextView
+                    android:id="@+id/professor_introduction"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="5dp"
+                    android:textSize="14sp"
+                    android:text="Jacob A. Abraham is a professor in the Department of Electrical and Computer Engineering at The University of Texas at Austin. He is also director of the Computer Engineering Research Center and holds the Cockrell Family Regents Chair in Engineering. He received the bachelor's degree in electrical engineering from the University of Kerala, India, in 1970. His M.S. degree, in electrical engineering, and Ph.D., in electrical engineering and computer science, were received from Stanford University, Stanford, California, in 1971 and 1974, respectively. From 1975 to 1988 he was on the faculty of the University of Illinois, Urbana, Illinois."/>
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/research_info_area"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="Research Information:"
+                android:textStyle="bold"
+                android:textSize="18sp"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:orientation="vertical"
+                android:background="@drawable/professor_detail_field_background"
+                android:padding="10dp">
+
+                <LinearLayout
+                    android:id="@+id/professor_research_areas_area"
+                    android:layout_width="300dp"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="0.45"
+                        android:textStyle="bold"
+                        android:text="Research areas:"/>
+
+                    <TextView
+                        android:id="@+id/professor_research_areas"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="0.55"
+                        android:text="Software Engineering\nComputer Architecture"/>
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/professor_research_interests_area"
+                    android:layout_width="300dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="5dp"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="0.45"
+                        android:textStyle="bold"
+                        android:text="Research interests:"/>
+
+                    <TextView
+                        android:id="@+id/professor_research_interests"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="0.55"
+                        android:text="Software Engineering\nComputer Architecture"/>
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/professor_research_groups_area"
+                    android:layout_width="300dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="5dp"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="0.45"
+                        android:textStyle="bold"
+                        android:text="Research groups:"/>
+
+                    <TextView
+                        android:id="@+id/professor_research_groups"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="0.55"
+                        android:text="Software Engineering\nComputer Architecture"/>
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</ScrollView>

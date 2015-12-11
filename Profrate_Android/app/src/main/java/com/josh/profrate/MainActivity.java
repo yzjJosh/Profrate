@@ -46,6 +46,9 @@ public class MainActivity extends Activity {
     private ProgressBar progressBar;
     private LinearLayout error_sign;
     private LinearLayout warning_sign;
+    private ImageView user_photo;
+    private TextView user_name;
+    private TextView user_email;
     private int cur_view;
     private ViewContent content;
 
@@ -65,11 +68,18 @@ public class MainActivity extends Activity {
         drawerList.setAdapter(menu_list_adapter);
         drawerList.setOnItemClickListener(listItemListener);
         drawerLayout = (DrawerLayout)findViewById(R.id.drawerLayout);
+        drawerLayout.setDrawerListener(drawerListener);
         title = (TextView)findViewById(R.id.main_activity_title);
         content_layout = (RelativeLayout)findViewById(R.id.main_activity_content);
         progressBar = (ProgressBar) findViewById(R.id.main_activity_progress_bar);
         error_sign = (LinearLayout) findViewById(R.id.main_activity_error);
         warning_sign = (LinearLayout) findViewById(R.id.main_activity_warning);
+        user_photo = (ImageView) findViewById(R.id.drawer_user_photo);
+        user_photo.setImageBitmap(Credential.getCurrentUserPhoto());
+        user_name = (TextView) findViewById(R.id.drawer_user_name);
+        user_name.setText(Credential.getCurrentUser().name);
+        user_email = (TextView) findViewById(R.id.drawer_user_email);
+        user_email.setText(Credential.getCurrentUser().email);
         switchContent(cur_view);
     }
 
@@ -155,6 +165,30 @@ public class MainActivity extends Activity {
         if(!isLoading)
             switchContent(cur_view);
     }
+
+    private DrawerLayout.DrawerListener drawerListener = new DrawerLayout.DrawerListener() {
+        @Override
+        public void onDrawerSlide(View drawerView, float slideOffset) {
+
+        }
+
+        @Override
+        public void onDrawerOpened(View drawerView) {
+            user_photo.setImageBitmap(Credential.getCurrentUserPhoto());
+            user_name.setText(Credential.getCurrentUser().name);
+            user_email.setText(Credential.getCurrentUser().email);
+        }
+
+        @Override
+        public void onDrawerClosed(View drawerView) {
+
+        }
+
+        @Override
+        public void onDrawerStateChanged(int newState) {
+
+        }
+    };
 
     private class MenuListAdapter extends BaseAdapter {
         private List<Map<String, Object>> menuData;

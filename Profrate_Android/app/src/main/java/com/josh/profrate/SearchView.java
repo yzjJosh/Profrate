@@ -35,7 +35,7 @@ public class SearchView extends Dialog implements Runnable{
     private HashMap<String, List<String>> cache = new HashMap<String, List<String>>();
 
     public SearchView(Context context){
-        super(context, R.style.theme_search_view);
+        super(context, R.style.theme_dialog);
         setContentView(R.layout.search_view);
         Window window = getWindow();
         WindowManager.LayoutParams wmlp = window.getAttributes();

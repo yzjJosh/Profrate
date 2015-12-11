@@ -1,9 +1,10 @@
 package com.josh.profrate;
 
-import android.app.Activity;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.support.v4.app.FragmentActivity;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -14,7 +15,9 @@ import com.josh.profrate.dataStructures.Article;
 import com.josh.profrate.dataStructures.Comment;
 import com.josh.profrate.dataStructures.CommentReply;
 import com.josh.profrate.dataStructures.Professor;
+import com.josh.profrate.dataStructures.Rating;
 import com.josh.profrate.dataStructures.User;
+import com.josh.profrate.elements.BitmapFetcher;
 import com.josh.profrate.viewContents.CommentsAndArticlesView;
 import com.josh.profrate.viewContents.ViewContent;
 import com.josh.profrate.viewContents.ViewOneProsessor;
@@ -28,7 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class SecondaryActivity extends Activity {
+public class SecondaryActivity extends FragmentActivity {
 
     public static final int SEARCH = 0;
     public static final int PROFESSOR_DETAIL = 1;
@@ -152,6 +155,8 @@ public class SecondaryActivity extends Activity {
                         break;
                     case PROFESSOR_DETAIL:
                         data.put("professor", Professor.getProfessor((long)value));
+                        data.put("photo", BitmapFetcher.fetchBitmap(((Professor) data.get("professor")).image_url));
+                        data.put("myRating", ((Professor) data.get("professor")).getRating());
                         break;
                     case COMMENTS_AND_ARTICLES:
                         Professor professor = Professor.getProfessor((long) value);
@@ -180,6 +185,7 @@ public class SecondaryActivity extends Activity {
                         }
                         data.put("articleComments", articleComments);
                         data.put("users", users);
+                        data.put("photo", BitmapFetcher.fetchBitmap(((Professor) data.get("professor")).image_url));
                         break;
                     default:
                         break;
@@ -215,12 +221,13 @@ public class SecondaryActivity extends Activity {
                         activity.content = new ViewProfessors(activity, activity.content_layout, new ArrayList<Professor>());
                         break;
                     case PROFESSOR_DETAIL:
-                        activity.content = new ViewOneProsessor(activity, activity.content_layout, null);
+                        activity.content = new ViewOneProsessor(activity, activity.content_layout, (Professor)data.get("professor"),
+                                (Bitmap)data.get("photo"), (Rating)data.get("myRating"));
                         break;
                     case COMMENTS_AND_ARTICLES:
                         activity.content = new CommentsAndArticlesView(activity, activity.content_layout, (Professor) data.get("professor"),
                                 (List<Comment>) data.get("comments"), (List<Article>) data.get("articles"), (Map<Long, List<CommentReply>>)data.get("commentReplies"),
-                                (Map<Long, List<Comment>>)data.get("articleComments"), (Map<String, User>)data.get("users"));
+                                (Map<Long, List<Comment>>)data.get("articleComments"), (Map<String, User>)data.get("users"), (Bitmap)data.get("photo"));
                         break;
                     case SINGLE_COMMENT:
                         break;

@@ -48,7 +48,7 @@ public class LogIn extends Activity {
     }
 
     private void performLogIn(final String email){
-        processingDialog = new Dialog(this, R.style.theme_processing_dialog);
+        processingDialog = new Dialog(this, R.style.theme_dialog);
         processingDialog.setContentView(R.layout.processing_dialog);
         processingDialog.setCancelable(false);
         processingDialog.show();

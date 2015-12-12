@@ -20,6 +20,7 @@ import com.josh.profrate.dataStructures.User;
 import com.josh.profrate.elements.BitmapFetcher;
 import com.josh.profrate.viewContents.CommentsAndArticlesView;
 import com.josh.profrate.viewContents.ViewContent;
+import com.josh.profrate.viewContents.ViewOneArticle;
 import com.josh.profrate.viewContents.ViewOneComment;
 import com.josh.profrate.viewContents.ViewOneProsessor;
 import com.josh.profrate.viewContents.ViewProfessors;
@@ -154,56 +155,89 @@ public class SecondaryActivity extends Activity {
                         break;
                     case PROFESSOR_DETAIL:
                         data.put("professor", Professor.getProfessor((long)value));
-                        data.put("photo", BitmapFetcher.fetchBitmap(((Professor) data.get("professor")).image_url));
-                        data.put("myRating", ((Professor) data.get("professor")).getRating());
+                        if(data.get("professor") != null) {
+                            data.put("photo", BitmapFetcher.fetchBitmap(((Professor) data.get("professor")).image_url));
+                            data.put("myRating", ((Professor) data.get("professor")).getRating());
+                            data.put("success", true);
+                        }else
+                            data.put("success", false);
                         break;
                     case COMMENTS_AND_ARTICLES:
                         Professor professor = Professor.getProfessor((long) value);
-                        data.put("professor", professor);
-                        data.put("comments", professor.getComments());
-                        data.put("articles", professor.getArticles());
-                        Map<String, User> users = new HashMap<String, User>();
-                        Map<Long, List<CommentReply>> commentReplies = new HashMap<Long, List<CommentReply>>();
-                        for(Comment comment: (List<Comment>) data.get("comments")) {
-                            commentReplies.put(comment.id, comment.getReplies());
-                            if(!users.containsKey(comment.author_email))
-                                users.put(comment.author_email, User.getUser(comment.author_email));
-                            for(CommentReply reply: commentReplies.get(comment.id))
-                                if(!users.containsKey(reply.author_email))
-                                    users.put(reply.author_email, User.getUser(reply.author_email));
-                        }
-                        data.put("commentReplies", commentReplies);
-                        Map<Long, List<Comment>> articleComments = new HashMap<Long, List<Comment>>();
-                        for(Article article: (List<Article>) data.get("articles")) {
-                            articleComments.put(article.id, article.getComments());
-                            if(!users.containsKey(article.author_email))
-                                users.put(article.author_email, User.getUser(article.author_email));
-                            for(Comment comment: articleComments.get(article.id))
-                                if(!users.containsKey(comment.author_email))
+                        if(professor != null) {
+                            data.put("professor", professor);
+                            data.put("comments", professor.getComments());
+                            data.put("articles", professor.getArticles());
+                            Map<String, User> users = new HashMap<String, User>();
+                            Map<Long, List<CommentReply>> commentReplies = new HashMap<Long, List<CommentReply>>();
+                            for (Comment comment : (List<Comment>) data.get("comments")) {
+                                commentReplies.put(comment.id, comment.getReplies());
+                                if (!users.containsKey(comment.author_email))
                                     users.put(comment.author_email, User.getUser(comment.author_email));
-                        }
-                        data.put("articleComments", articleComments);
-                        data.put("users", users);
-                        data.put("photo", BitmapFetcher.fetchBitmap(((Professor) data.get("professor")).image_url));
+                                for (CommentReply reply : commentReplies.get(comment.id))
+                                    if (!users.containsKey(reply.author_email))
+                                        users.put(reply.author_email, User.getUser(reply.author_email));
+                            }
+                            data.put("commentReplies", commentReplies);
+                            Map<Long, List<Comment>> articleComments = new HashMap<Long, List<Comment>>();
+                            for (Article article : (List<Article>) data.get("articles")) {
+                                articleComments.put(article.id, article.getComments());
+                                if (!users.containsKey(article.author_email))
+                                    users.put(article.author_email, User.getUser(article.author_email));
+                                for (Comment comment : articleComments.get(article.id))
+                                    if (!users.containsKey(comment.author_email))
+                                        users.put(comment.author_email, User.getUser(comment.author_email));
+                            }
+                            data.put("articleComments", articleComments);
+                            data.put("users", users);
+                            data.put("photo", BitmapFetcher.fetchBitmap(((Professor) data.get("professor")).image_url));
+                            data.put("success", true);
+                        }else
+                            data.put("success", false);
                         break;
                     case SINGLE_COMMENT:
                         Comment comment = Comment.getComment((long)value);
-                        List<CommentReply> replies = comment.getReplies();
-                        users = new HashMap<String, User>();
-                        users.put(comment.author_email, User.getUser(comment.author_email));
-                        for(CommentReply reply: replies)
-                            if(!users.containsKey(reply.author_email))
-                                users.put(reply.author_email, User.getUser(reply.author_email));
-                        data.put("comment", comment);
-                        data.put("replies", replies);
-                        data.put("users", users);
+                        if(comment != null) {
+                            List<CommentReply> replies = comment.getReplies();
+                            Map<String, User> users = new HashMap<String, User>();
+                            users.put(comment.author_email, User.getUser(comment.author_email));
+                            for (CommentReply reply : replies)
+                                if (!users.containsKey(reply.author_email))
+                                    users.put(reply.author_email, User.getUser(reply.author_email));
+                            data.put("comment", comment);
+                            data.put("replies", replies);
+                            data.put("users", users);
+                            data.put("success", true);
+                        }else
+                            data.put("success", false);
                         break;
                     case SINGLE_ARTICLE:
+                        Article article = Article.getArticle((long)value);
+                        if(article != null) {
+                            List<Comment> comments = article.getComments();
+                            Map<String, User> users = new HashMap<String, User>();
+                            Map<Long, List<CommentReply>> commentReplies = new HashMap<Long, List<CommentReply>>();
+                            users.put(article.author_email, User.getUser(article.author_email));
+                            for (Comment c : comments) {
+                                commentReplies.put(c.id, c.getReplies());
+                                if (!users.containsKey(c.author_email))
+                                    users.put(c.author_email, User.getUser(c.author_email));
+                                for (CommentReply reply : commentReplies.get(c.id))
+                                    if (!users.containsKey(reply.author_email))
+                                        users.put(reply.author_email, User.getUser(reply.author_email));
+                            }
+                            data.put("article", article);
+                            data.put("comments", comments);
+                            data.put("commentReplies", commentReplies);
+                            data.put("users", users);
+                            data.put("success", true);
+                        }else
+                            data.put("success", false);
                         break;
                     default:
+                        data.put("success", false);
                         break;
                 }
-                data.put("success", true);
             } catch (IOException e){
                 e.printStackTrace();
                 data.put("success", false);
@@ -247,6 +281,9 @@ public class SecondaryActivity extends Activity {
                                 (List<CommentReply>)data.get("replies"), (Map<String, User>)data.get("users"));
                         break;
                     case SINGLE_ARTICLE:
+                        activity.content = new ViewOneArticle(activity, activity.content_layout, (Article)data.get("article"),
+                                (List<Comment>)data.get("comments"), (Map<Long, List<CommentReply>>)data.get("commentReplies"),
+                                (Map<String, User>)data.get("users"));
                         break;
                     default:
                         break;

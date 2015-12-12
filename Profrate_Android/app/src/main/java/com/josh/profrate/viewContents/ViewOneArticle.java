@@ -1,7 +1,6 @@
 package com.josh.profrate.viewContents;
 
 import android.content.Context;
-import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Handler;
 import android.os.Message;
@@ -10,13 +9,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.josh.profrate.R;
-import com.josh.profrate.SecondaryActivity;
 import com.josh.profrate.dataStructures.Article;
 import com.josh.profrate.dataStructures.Comment;
+import com.josh.profrate.dataStructures.CommentReply;
 import com.josh.profrate.dataStructures.User;
 import com.josh.profrate.elements.BitmapFetcher;
 import com.josh.profrate.elements.Credential;
@@ -24,122 +24,90 @@ import com.josh.profrate.elements.TimeConverter;
 
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
-public class ArticleList extends ViewContent {
-
-    private final static int MAX_COMMENT_NUM = 3;
+public class ViewOneArticle extends ViewContent{
 
     private static final int TASK_LOAD_PHOTO = 0;
     private static final int TASK_TOGGLE_LIKE = 1;
     private static final int TASK_TOGGLE_DISLIKE = 2;
 
-    private final List<Article> articles;
-    private final Map<String, User> users;
-    private final Map<Long, List<Comment>> articleComments;
-    private final Handler handler = new TaskHandler(this);
-    private final Set<Article> isTogglingLikeness;
+    private Article article;
+    private List<Comment> comments;
+    Map<Long, List<CommentReply>> commentReplies;
+    private Map<String, User> users;
+    private Handler handler = new TaskHandler(this);
+    private ViewContent commentListContent;
+    private boolean isTogglingLikeness;
     private boolean isActive;
 
-    public ArticleList(Context context, ViewGroup parentLayout, List<Article> articles,
-                        Map<Long, List<Comment>> articleComments, Map<String, User> users) {
+    public ViewOneArticle(Context context, ViewGroup parentLayout, Article article, List<Comment> comments,
+                          Map<Long, List<CommentReply>> commentReplies, Map<String, User> users) {
         super(context, parentLayout);
-        this.articles = articles;
+        this.article = article;
+        this.comments = comments;
         this.users = users;
-        this.articleComments = articleComments;
-        this.isTogglingLikeness = new HashSet<Article>();
+        this.commentReplies = commentReplies;
+        this.isTogglingLikeness = false;
         this.isActive = false;
     }
 
     @Override
     public void show() {
         final LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        for(final Article article: articles){
-            final View articleView = inflater.inflate(R.layout.article_item, parentLayout, false);
-            User author = users.get(article.author_email);
-            ((TextView)articleView.findViewById(R.id.user_name)).setText(author.name);
-            ((TextView)articleView.findViewById(R.id.title)).setText(article.title);
-            ((TextView)articleView.findViewById(R.id.time)).setText(TimeConverter.convertTime(article.time));
-            ((TextView)articleView.findViewById(R.id.content)).setText(article.content);
-            ((TextView)articleView.findViewById(R.id.like_num)).setText(article.liked_by.size() + "");
-            ((TextView)articleView.findViewById(R.id.dislike_num)).setText(article.disliked_by.size() + "");
-            ((TextView)articleView.findViewById(R.id.comment_num)).setText(article.comment_num + "");
-            if (article.liked_by.contains(Credential.getCredential().getSelectedAccountName()))
-                ((ImageView)articleView.findViewById(R.id.like_icon)).setImageResource(R.drawable.like_colored);
-            else
-                ((ImageView)articleView.findViewById(R.id.like_icon)).setImageResource(R.drawable.like_bw);
-            if (article.disliked_by.contains(Credential.getCredential().getSelectedAccountName()))
-                ((ImageView)articleView.findViewById(R.id.dislike_icon)).setImageResource(R.drawable.dislike_colored);
-            else
-                ((ImageView)articleView.findViewById(R.id.dislike_icon)).setImageResource(R.drawable.dislike_bw);
-            articleView.findViewById(R.id.article_click_area).setOnClickListener(new ArticleClickListener(article));
-            articleView.findViewById(R.id.comment_btn).setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
+        inflater.inflate(R.layout.view_article, parentLayout, true);
+        User author = users.get(article.author_email);
+        ((TextView)parentLayout.findViewById(R.id.user_name)).setText(author.name);
+        ((TextView)parentLayout.findViewById(R.id.title)).setText(article.title);
+        ((TextView)parentLayout.findViewById(R.id.time)).setText(TimeConverter.convertTime(article.time));
+        ((TextView)parentLayout.findViewById(R.id.content)).setText(article.content);
+        ((TextView)parentLayout.findViewById(R.id.like_num)).setText(article.liked_by.size() + "");
+        ((TextView)parentLayout.findViewById(R.id.dislike_num)).setText(article.disliked_by.size() + "");
+        ((TextView)parentLayout.findViewById(R.id.comment_num)).setText(article.comment_num + "");
+        if (article.liked_by.contains(Credential.getCredential().getSelectedAccountName()))
+            ((ImageView)parentLayout.findViewById(R.id.like_icon)).setImageResource(R.drawable.like_colored);
+        else
+            ((ImageView)parentLayout.findViewById(R.id.like_icon)).setImageResource(R.drawable.like_bw);
+        if (article.disliked_by.contains(Credential.getCredential().getSelectedAccountName()))
+            ((ImageView)parentLayout.findViewById(R.id.dislike_icon)).setImageResource(R.drawable.dislike_colored);
+        else
+            ((ImageView)parentLayout.findViewById(R.id.dislike_icon)).setImageResource(R.drawable.dislike_bw);
+        parentLayout.findViewById(R.id.comment_btn).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
 
-                }
-            });
-            articleView.findViewById(R.id.like_btn).setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    new LikeThread(article, articleView.findViewById(R.id.comment_tool_bar)).start();
-                }
-            });
-            articleView.findViewById(R.id.dislike_btn).setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    new DislikeThread(article, articleView.findViewById(R.id.comment_tool_bar)).start();
-                }
-            });
-            new LoadPhotoThread(author.photo_url, (ImageView)articleView.findViewById(R.id.user_photo)).start();
-            LinearLayout reply_list = (LinearLayout)articleView.findViewById(R.id.reply_list);
-            List<Comment> comments = articleComments.get(article.id);
-            int count = 0;
-            for (Comment comment : comments) {
-                if (count == MAX_COMMENT_NUM) break;
-                User user = users.get(comment.author_email);
-                View reply_item = inflater.inflate(R.layout.comment_reply_item, reply_list, false);
-                ((TextView) reply_item.findViewById(R.id.user_name)).setText(user.name);
-                ((TextView) reply_item.findViewById(R.id.replyToName)).setText(author.name);
-                ((TextView) reply_item.findViewById(R.id.comment)).setText(comment.content);
-                ((TextView) reply_item.findViewById(R.id.time)).setText(TimeConverter.convertTime(comment.time));
-                reply_list.addView(reply_item);
-                new LoadPhotoThread(user.photo_url, (ImageView)reply_item.findViewById(R.id.user_photo)).start();
-                count++;
             }
-            parentLayout.addView(articleView);
-        }
-        isActive = true;
+        });
+        parentLayout.findViewById(R.id.like_btn).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                new LikeThread().start();
+            }
+        });
+        parentLayout.findViewById(R.id.dislike_btn).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                new DislikeThread().start();
+            }
+        });
+        LinearLayout comment_list = (LinearLayout)parentLayout.findViewById(R.id.comment_list);
+        commentListContent = new CommentsList(context, comment_list, comments, commentReplies, users);
+        commentListContent.show();
+        this.isActive = true;
     }
 
     @Override
     public void clear() {
+        if(commentListContent != null)
+            commentListContent.clear();
         parentLayout.removeAllViews();
-        isActive = false;
+        this.isActive = false;
     }
 
     @Override
     public boolean isActive() {
         return isActive;
-    }
-
-    private class ArticleClickListener implements View.OnClickListener{
-
-        private final Article article;
-
-        public ArticleClickListener(Article article){
-            this.article = article;
-        }
-
-        @Override
-        public void onClick(View v) {
-            context.startActivity(new Intent(context, SecondaryActivity.class).
-                    putExtra("view", SecondaryActivity.SINGLE_ARTICLE).
-                    putExtra("article_id", article.id));
-        }
     }
 
     private class LoadPhotoThread extends Thread{
@@ -167,23 +135,15 @@ public class ArticleList extends ViewContent {
 
     private class LikeThread extends Thread{
 
-        private final Article article;
-        private final View commentToolBar;
-
-        public LikeThread(Article article, View commentToolBar){
-            this.article = article;
-            this.commentToolBar = commentToolBar;
-        }
-
         @Override
         public void run(){
-            if(isTogglingLikeness.contains(article)) return;
-            isTogglingLikeness.add(article);
+            if(isTogglingLikeness) return;
+            isTogglingLikeness = false;
             Message message = new Message();
             HashMap<String, Object> data = new HashMap<String, Object>();
             data.put("task", TASK_TOGGLE_LIKE);
             data.put("article", article);
-            data.put("commentToolBar", commentToolBar);
+            data.put("commentToolBar", parentLayout.findViewById(R.id.comment_tool_bar));
             try {
                 boolean success = false;
                 data.put("success", success = article.toggle_like());
@@ -206,23 +166,15 @@ public class ArticleList extends ViewContent {
 
     private class DislikeThread extends Thread{
 
-        private final Article article;
-        private final View commentToolBar;
-
-        public DislikeThread(Article article, View commentToolBar){
-            this.article = article;
-            this.commentToolBar = commentToolBar;
-        }
-
         @Override
         public void run(){
-            if(isTogglingLikeness.contains(article)) return;
-            isTogglingLikeness.add(article);
+            if(isTogglingLikeness) return;
+            isTogglingLikeness = true;
             Message message = new Message();
             HashMap<String, Object> data = new HashMap<String, Object>();
             data.put("task", TASK_TOGGLE_DISLIKE);
             data.put("article", article);
-            data.put("commentToolBar", commentToolBar);
+            data.put("commentToolBar", parentLayout.findViewById(R.id.comment_tool_bar));
             try {
                 boolean success = false;
                 data.put("success", success = article.toggle_dislike());
@@ -245,9 +197,9 @@ public class ArticleList extends ViewContent {
 
     private static class TaskHandler extends Handler {
 
-        private ArticleList content;
+        private ViewOneArticle content;
 
-        public TaskHandler(ArticleList content){
+        public TaskHandler(ViewOneArticle content){
             this.content = content;
         }
 
@@ -267,7 +219,7 @@ public class ArticleList extends ViewContent {
                 case TASK_TOGGLE_LIKE:
                     Article article = (Article) data.get("article");
                     View commentToolBar = (View) data.get("commentToolBar");
-                    content.isTogglingLikeness.remove(article);
+                    content.isTogglingLikeness = false;
                     if((boolean)data.get("success")) {
                         if (article.liked_by.contains(Credential.getCredential().getSelectedAccountName())) {
                             Toast.makeText(content.context, "Successfully like the article!", Toast.LENGTH_LONG).show();
@@ -285,7 +237,7 @@ public class ArticleList extends ViewContent {
                 case TASK_TOGGLE_DISLIKE:
                     article = (Article) data.get("article");
                     commentToolBar = (View) data.get("commentToolBar");
-                    content.isTogglingLikeness.remove(article);
+                    content.isTogglingLikeness = false;
                     if((boolean)data.get("success")) {
                         if (article.disliked_by.contains(Credential.getCredential().getSelectedAccountName())) {
                             Toast.makeText(content.context, "Successfully dislike the article!", Toast.LENGTH_LONG).show();

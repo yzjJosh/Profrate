@@ -1,10 +1,10 @@
 package com.josh.profrate;
 
+import android.app.Activity;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.support.v4.app.FragmentActivity;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -20,18 +20,17 @@ import com.josh.profrate.dataStructures.User;
 import com.josh.profrate.elements.BitmapFetcher;
 import com.josh.profrate.viewContents.CommentsAndArticlesView;
 import com.josh.profrate.viewContents.ViewContent;
+import com.josh.profrate.viewContents.ViewOneComment;
 import com.josh.profrate.viewContents.ViewOneProsessor;
 import com.josh.profrate.viewContents.ViewProfessors;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
-public class SecondaryActivity extends FragmentActivity {
+public class SecondaryActivity extends Activity {
 
     public static final int SEARCH = 0;
     public static final int PROFESSOR_DETAIL = 1;
@@ -114,7 +113,7 @@ public class SecondaryActivity extends FragmentActivity {
     }
 
     private void switchContent(int view_id){
-        if(view_id >COMMENTS_AND_ARTICLES || view_id < SEARCH) return;
+        if(view_id >SINGLE_ARTICLE || view_id < SEARCH) return;
         activityTitile.setText(viewName(view_id));
         if(content != null) {
             content.clear();
@@ -187,6 +186,20 @@ public class SecondaryActivity extends FragmentActivity {
                         data.put("users", users);
                         data.put("photo", BitmapFetcher.fetchBitmap(((Professor) data.get("professor")).image_url));
                         break;
+                    case SINGLE_COMMENT:
+                        Comment comment = Comment.getComment((long)value);
+                        List<CommentReply> replies = comment.getReplies();
+                        users = new HashMap<String, User>();
+                        users.put(comment.author_email, User.getUser(comment.author_email));
+                        for(CommentReply reply: replies)
+                            if(!users.containsKey(reply.author_email))
+                                users.put(reply.author_email, User.getUser(reply.author_email));
+                        data.put("comment", comment);
+                        data.put("replies", replies);
+                        data.put("users", users);
+                        break;
+                    case SINGLE_ARTICLE:
+                        break;
                     default:
                         break;
                 }
@@ -230,6 +243,8 @@ public class SecondaryActivity extends FragmentActivity {
                                 (Map<Long, List<Comment>>)data.get("articleComments"), (Map<String, User>)data.get("users"), (Bitmap)data.get("photo"));
                         break;
                     case SINGLE_COMMENT:
+                        activity.content = new ViewOneComment(activity, activity.content_layout, (Comment)data.get("comment"),
+                                (List<CommentReply>)data.get("replies"), (Map<String, User>)data.get("users"));
                         break;
                     case SINGLE_ARTICLE:
                         break;

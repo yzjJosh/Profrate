@@ -1,5 +1,6 @@
 package com.josh.profrate.viewContents;
 
+import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
@@ -17,6 +18,7 @@ import android.widget.Toast;
 import com.josh.profrate.CommentDialog;
 import com.josh.profrate.R;
 import com.josh.profrate.SecondaryActivity;
+import com.josh.profrate.WriteArticleActivity;
 import com.josh.profrate.dataStructures.Article;
 import com.josh.profrate.dataStructures.Comment;
 import com.josh.profrate.dataStructures.CommentReply;
@@ -51,6 +53,7 @@ public class ArticleList extends ViewContent {
     private final Handler handler = new TaskHandler(this);
     private final Set<Article> isTogglingLikeness;
     private Dialog processingDialog;
+    private EditArticleThread editArticleThread;
     private boolean isActive;
 
     public ArticleList(Context context, ViewGroup parentLayout, List<Article> articles,
@@ -76,7 +79,7 @@ public class ArticleList extends ViewContent {
             ((TextView)articleView.findViewById(R.id.content)).setText(article.content);
             ((TextView)articleView.findViewById(R.id.like_num)).setText(article.liked_by.size() + "");
             ((TextView)articleView.findViewById(R.id.dislike_num)).setText(article.disliked_by.size() + "");
-            ((TextView)articleView.findViewById(R.id.comment_num)).setText(article.comment_num + "");
+            ((TextView)articleView.findViewById(R.id.comment_num)).setText(articleComments.get(article.id).size() + "");
             if (article.liked_by.contains(Credential.getCredential().getSelectedAccountName()))
                 ((ImageView)articleView.findViewById(R.id.like_icon)).setImageResource(R.drawable.like_colored);
             else
@@ -89,13 +92,11 @@ public class ArticleList extends ViewContent {
                 articleView.findViewById(R.id.btn_edit).setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        processingDialog = new Dialog(context, R.style.theme_dialog);
-                        processingDialog.setContentView(R.layout.processing_dialog);
-                        processingDialog.setCancelable(false);
-                        processingDialog.show();
-                        new EditArticleThread(article, "test editing", "test editing",
-                                (TextView)articleView.findViewById(R.id.title),
-                                (TextView)articleView.findViewById(R.id.content)).start();
+                        Intent intent = new Intent(context, WriteArticleActivity.class);
+                        intent.putExtra("title", article.title);
+                        intent.putExtra("content", article.content);
+                        editArticleThread = new EditArticleThread(article);
+                        ((Activity)context).startActivityForResult(intent, CommentsAndArticlesView.CODE_EDIT_ARTICLE);
                     }
                 });
                 articleView.findViewById(R.id.btn_delete).setOnClickListener(new View.OnClickListener() {
@@ -120,12 +121,16 @@ public class ArticleList extends ViewContent {
                             setOnConfirmButtonClickListener(new View.OnClickListener() {
                                 @Override
                                 public void onClick(View v) {
+                                    if(dialog.getInputText().length() == 0){
+                                        Toast.makeText(context, "Please enter your comment!", Toast.LENGTH_LONG).show();
+                                        return;
+                                    }
                                     processingDialog = new Dialog(context, R.style.theme_dialog);
                                     processingDialog.setContentView(R.layout.processing_dialog);
                                     processingDialog.setCancelable(false);
                                     processingDialog.show();
                                     new CommentArticleThread(article, dialog.getInputText(), reply_list,
-                                            (TextView) articleView.findViewById(R.id.comment_num)).start();
+                                            (TextView) articleView.findViewById(R.id.comment_num), article.id).start();
                                 }
                             }).show();
                 }
@@ -148,7 +153,7 @@ public class ArticleList extends ViewContent {
             for (final Comment comment : comments) {
                 if (count == MAX_COMMENT_NUM) break;
                 View reply_item = generateCommentView(comment, reply_list,
-                        (TextView) articleView.findViewById(R.id.comment_num), author.name);
+                        (TextView) articleView.findViewById(R.id.comment_num), author.name, article.id);
                 reply_list.addView(reply_item);
                 new LoadPhotoThread(users.get(comment.author_email).photo_url,
                         (ImageView)reply_item.findViewById(R.id.user_photo)).start();
@@ -159,7 +164,7 @@ public class ArticleList extends ViewContent {
         isActive = true;
     }
 
-    private View generateCommentView(final Comment comment, final ViewGroup parent, final TextView commentNumText, String articleAuthorName){
+    private View generateCommentView(final Comment comment, final ViewGroup parent, final TextView commentNumText, String articleAuthorName, final long articleId){
         final LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         final View reply_item = inflater.inflate(R.layout.comment_reply_item, parent, false);
         User user = users.get(comment.author_email);
@@ -177,12 +182,15 @@ public class ArticleList extends ViewContent {
                             setOnConfirmButtonClickListener(new View.OnClickListener() {
                                 @Override
                                 public void onClick(View v) {
+                                    if(dialog.getInputText().length() == 0){
+                                        Toast.makeText(context, "Please enter your comment!", Toast.LENGTH_LONG).show();
+                                        return;
+                                    }
                                     processingDialog = new Dialog(context, R.style.theme_dialog);
                                     processingDialog.setContentView(R.layout.processing_dialog);
                                     processingDialog.setCancelable(false);
                                     processingDialog.show();
-                                    new EditCommentThread(comment, dialog.getInputText(),
-                                            (TextView) reply_item.findViewById(R.id.comment)).start();
+                                    new EditCommentThread(comment, dialog.getInputText(), parent, articleId).start();
                                 }
                             }).show();
                 }
@@ -194,7 +202,7 @@ public class ArticleList extends ViewContent {
                     processingDialog.setContentView(R.layout.processing_dialog);
                     processingDialog.setCancelable(false);
                     processingDialog.show();
-                    new DeleteCommentThread(comment, reply_item, parent, commentNumText).start();
+                    new DeleteCommentThread(comment, reply_item, parent, commentNumText, articleId).start();
                 }
             });
         }else
@@ -211,6 +219,20 @@ public class ArticleList extends ViewContent {
     @Override
     public boolean isActive() {
         return isActive;
+    }
+
+    public void onActivityResult(int requestCode, int resultCode, Intent data){
+        if(resultCode == Activity.RESULT_OK && requestCode == CommentsAndArticlesView.CODE_EDIT_ARTICLE){
+            String title = data.getStringExtra("title");
+            String content = data.getStringExtra("content");
+            processingDialog = new Dialog(context, R.style.theme_dialog);
+            processingDialog.setContentView(R.layout.processing_dialog);
+            processingDialog.setCancelable(false);
+            processingDialog.show();
+            editArticleThread.newTitle = title;
+            editArticleThread.newContent = content;
+            editArticleThread.start();
+        }
     }
 
     private class ArticleClickListener implements View.OnClickListener{
@@ -333,18 +355,11 @@ public class ArticleList extends ViewContent {
     private class EditArticleThread extends Thread{
 
         private final Article article;
-        private final String newTitle;
-        private final String newContent;
-        private final TextView titleText;
-        private final TextView contentText;
+        private String newTitle;
+        private String newContent;
 
-        public EditArticleThread(Article article, String newTitle, String newContent,
-                TextView titleText, TextView contentText){
+        public EditArticleThread(Article article){
             this.article = article;
-            this.newTitle = newTitle;
-            this.newContent = newContent;
-            this.titleText = titleText;
-            this.contentText = contentText;
         }
 
         @Override
@@ -352,12 +367,13 @@ public class ArticleList extends ViewContent {
             Message message = new Message();
             HashMap<String, Object> data = new HashMap<String, Object>();
             data.put("task", TASK_EDIT_ARTICLE);
-            data.put("newTitle", newTitle);
-            data.put("newContent", newContent);
-            data.put("titleText", titleText);
-            data.put("contentText", contentText);
+            data.put("article", article);
             try {
-                data.put("success", article.edit(newTitle, newContent));
+                if(article.edit(newTitle, newContent)) {
+                    data.put("newArticle", Article.getArticle(article.id));
+                    data.put("success", true);
+                }else
+                    data.put("success", false);
             } catch (IOException e) {
                 data.put("success", false);
                 e.printStackTrace();
@@ -386,6 +402,7 @@ public class ArticleList extends ViewContent {
             data.put("task", TASK_DELETE_ARTICLE);
             data.put("article_item", article_item);
             data.put("parent", parent);
+            data.put("article", article);
             try{
                 data.put("success", article.delete());
             }catch (IOException e){
@@ -401,12 +418,14 @@ public class ArticleList extends ViewContent {
 
         private final Comment comment;
         private final String newComment;
-        private final TextView commentText;
+        private final ViewGroup comment_list;
+        private final long articleId;
 
-        public EditCommentThread(Comment comment, String newComment, TextView commentText){
+        public EditCommentThread(Comment comment, String newComment, ViewGroup comment_list, long articleId){
             this.comment = comment;
             this.newComment = newComment;
-            this.commentText = commentText;
+            this.comment_list = comment_list;
+            this.articleId = articleId;
         }
 
         @Override
@@ -414,10 +433,15 @@ public class ArticleList extends ViewContent {
             Message message = new Message();
             HashMap<String, Object> data = new HashMap<String, Object>();
             data.put("task", TASK_EDIT_COMMENT);
-            data.put("newComment", newComment);
-            data.put("commentText", commentText);
+            data.put("comment_list", comment_list);
+            data.put("articleId", articleId);
+            data.put("comment", comment);
             try {
-                data.put("success", comment.edit(newComment));
+                if(comment.edit(newComment)) {
+                    data.put("newComment", Comment.getComment(comment.id));
+                    data.put("success", true);
+                }else
+                    data.put("success", false);
             } catch (IOException e) {
                 data.put("success", false);
                 e.printStackTrace();
@@ -433,12 +457,14 @@ public class ArticleList extends ViewContent {
         private final View comment_item;
         private final ViewGroup parent;
         private final TextView commentNum;
+        private final long articleId;
 
-        public DeleteCommentThread(Comment comment, View comment_item, ViewGroup parent, TextView commentNum){
+        public DeleteCommentThread(Comment comment, View comment_item, ViewGroup parent, TextView commentNum, long articleId){
             this.comment = comment;
             this.comment_item = comment_item;
             this.parent = parent;
             this.commentNum = commentNum;
+            this.articleId =articleId;
         }
 
         @Override
@@ -449,6 +475,8 @@ public class ArticleList extends ViewContent {
             data.put("comment_item", comment_item);
             data.put("parent", parent);
             data.put("commentNum", commentNum);
+            data.put("articleId", articleId);
+            data.put("comment", comment);
             try{
                 data.put("success", comment.delete());
             }catch (IOException e){
@@ -466,13 +494,15 @@ public class ArticleList extends ViewContent {
         private final String commentContent;
         private final ViewGroup parent;
         private final TextView commentNumText;
+        private final long articleId;
 
         public CommentArticleThread(Article article, String commentContent, ViewGroup parent,
-                                    TextView commentNumText){
+                                    TextView commentNumText, long articleId){
             this.article = article;
             this.commentContent = commentContent;
             this.parent = parent;
             this.commentNumText = commentNumText;
+            this.articleId = articleId;
         }
 
         @Override
@@ -483,6 +513,7 @@ public class ArticleList extends ViewContent {
             data.put("commentNumText", commentNumText);
             data.put("articleAuthorName", users.get(article.author_email).name);
             data.put("parent", parent);
+            data.put("articleId", articleId);
             try {
                 long comment_id = article.comment(commentContent);
                 if(comment_id != -1){
@@ -559,8 +590,15 @@ public class ArticleList extends ViewContent {
                 case TASK_EDIT_ARTICLE:
                     content.processingDialog.dismiss();
                     if((boolean)data.get("success")) {
-                        ((TextView) data.get("titleText")).setText((String) data.get("newTitle"));
-                        ((TextView) data.get("contentText")).setText((String) data.get("newContent"));
+                        article = (Article)data.get("article");
+                        int index = content.articles.indexOf(article);
+                        content.articles.remove(index);
+                        Article newArticle = (Article)data.get("newArticle");
+                        content.articles.add(index, newArticle);
+                        View article_item = content.parentLayout.getChildAt(index);
+                        ((TextView)article_item.findViewById(R.id.title)).setText(newArticle.title);
+                        ((TextView)article_item.findViewById(R.id.content)).setText(newArticle.content);
+                        ((TextView)article_item.findViewById(R.id.time)).setText(TimeConverter.convertTime(newArticle.time));
                     }else
                         Toast.makeText(content.context, "Unable to edit the article!", Toast.LENGTH_LONG).show();
                     break;
@@ -569,13 +607,25 @@ public class ArticleList extends ViewContent {
                     if((boolean)data.get("success")){
                         Toast.makeText(content.context, "Successfully delete the article!", Toast.LENGTH_LONG).show();
                         ((ViewGroup) data.get("parent")).removeView((View) data.get("article_item"));
+                        content.articles.remove((Article)data.get("article"));
                     }else
                         Toast.makeText(content.context, "Unable to delete the article!", Toast.LENGTH_LONG).show();
                     break;
                 case TASK_EDIT_COMMENT:
                     content.processingDialog.dismiss();
-                    if((boolean)data.get("success"))
-                        ((TextView)data.get("commentText")).setText((String)data.get("newComment"));
+                    if((boolean)data.get("success")) {
+                        long articleId = (long)data.get("articleId");
+                        List<Comment> comments = content.articleComments.get(articleId);
+                        Comment comment = (Comment)data.get("comment");
+                        int index = comments.indexOf(comment);
+                        comments.remove(index);
+                        Comment newComment = (Comment)data.get("newComment");
+                        comments.add(index, newComment);
+                        ViewGroup comment_list = (ViewGroup)data.get("comment_list");
+                        View comment_item = comment_list.getChildAt(index);
+                        ((TextView)comment_item.findViewById(R.id.comment)).setText(newComment.content);
+                        ((TextView)comment_item.findViewById(R.id.time)).setText(TimeConverter.convertTime(newComment.time));
+                    }
                     else
                         Toast.makeText(content.context, "Unable to edit the comment!", Toast.LENGTH_LONG).show();
                     break;
@@ -586,7 +636,10 @@ public class ArticleList extends ViewContent {
                         ViewGroup parent = (ViewGroup) data.get("parent");
                         parent.removeView((View) data.get("comment_item"));
                         TextView commentNum = (TextView)data.get("commentNum");
-                        commentNum.setText(Integer.parseInt(commentNum.getText().toString())-1+"");
+                        long articleId = (long)data.get("articleId");
+                        List<Comment> comments = content.articleComments.get(articleId);
+                        comments.remove((Comment) data.get("comment"));
+                        commentNum.setText(comments.size()+"");
                     }else
                         Toast.makeText(content.context, "Unable to delete the comment!", Toast.LENGTH_LONG).show();
                     break;
@@ -597,14 +650,17 @@ public class ArticleList extends ViewContent {
                         Comment comment = (Comment) data.get("comment");
                         TextView commentNumText = (TextView) data.get("commentNumText");
                         String articleAuthorName = (String) data.get("articleAuthorName");
-                        View reply_item = content.generateCommentView(comment, parent, commentNumText, articleAuthorName);
+                        long articleId = (long)data.get("articleId");
+                        View reply_item = content.generateCommentView(comment, parent, commentNumText, articleAuthorName, articleId);
                         if(parent.getChildCount() < ArticleList.MAX_COMMENT_NUM)
                             parent.addView(reply_item, 0);
                         else {
                             parent.removeViewAt(ArticleList.MAX_COMMENT_NUM-1);
                             parent.addView(reply_item, 0);
                         }
-                        commentNumText.setText(Integer.parseInt(commentNumText.getText().toString())+1+"");
+                        List<Comment> comments = content.articleComments.get(articleId);
+                        comments.add(0, comment);
+                        commentNumText.setText(comments.size()+"");
                         Bitmap photo = Credential.getCurrentUserPhoto();
                         if(photo != null)
                             ((ImageView)reply_item.findViewById(R.id.user_photo)).setImageBitmap(photo);

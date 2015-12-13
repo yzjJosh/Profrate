@@ -72,11 +72,15 @@ public class ViewOneComment extends ViewContent {
         scrollView.addView(commentView);
         User author = users.get(comment.author_email);
         ((TextView)commentView.findViewById(R.id.user_name)).setText(author.name);
-        ((TextView)commentView.findViewById(R.id.comment)).setText(comment.content);
+        TextView commentContent = (TextView) commentView.findViewById(R.id.comment);
+        commentContent.setText(comment.content);
+        commentContent.setMaxLines(Integer.MAX_VALUE);
+        commentContent.setEllipsize(null);
+        commentContent.setText(comment.content);
         ((TextView)commentView.findViewById(R.id.time)).setText(TimeConverter.convertTime(comment.time));
         ((TextView)commentView.findViewById(R.id.like_num)).setText(comment.liked_by.size() + "");
         ((TextView)commentView.findViewById(R.id.dislike_num)).setText(comment.disliked_by.size() + "");
-        ((TextView)commentView.findViewById(R.id.comment_num)).setText(comment.reply_num + "");
+        ((TextView)commentView.findViewById(R.id.comment_num)).setText(replies.size() + "");
         if (comment.liked_by.contains(Credential.getCredential().getSelectedAccountName()))
             ((ImageView)commentView.findViewById(R.id.like_icon)).setImageResource(R.drawable.like_colored);
         else
@@ -95,6 +99,10 @@ public class ViewOneComment extends ViewContent {
                             setOnConfirmButtonClickListener(new View.OnClickListener() {
                                 @Override
                                 public void onClick(View v) {
+                                    if(dialog.getInputText().length() == 0){
+                                        Toast.makeText(context, "Please enter your comment!", Toast.LENGTH_LONG).show();
+                                        return;
+                                    }
                                     processingDialog = new Dialog(context, R.style.theme_dialog);
                                     processingDialog.setContentView(R.layout.processing_dialog);
                                     processingDialog.setCancelable(false);
@@ -124,6 +132,10 @@ public class ViewOneComment extends ViewContent {
                         setOnConfirmButtonClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
+                                if(dialog.getInputText().length() == 0){
+                                    Toast.makeText(context, "Please enter your reply!", Toast.LENGTH_LONG).show();
+                                    return;
+                                }
                                 processingDialog = new Dialog(context, R.style.theme_dialog);
                                 processingDialog.setContentView(R.layout.processing_dialog);
                                 processingDialog.setCancelable(false);
@@ -163,7 +175,10 @@ public class ViewOneComment extends ViewContent {
         User user = users.get(reply.author_email);
         ((TextView) reply_item.findViewById(R.id.user_name)).setText(user.name);
         ((TextView) reply_item.findViewById(R.id.replyToName)).setText(users.get(comment.author_email).name);
-        ((TextView) reply_item.findViewById(R.id.comment)).setText(reply.content);
+        TextView commentContent = (TextView) reply_item.findViewById(R.id.comment);
+        commentContent.setText(reply.content);
+        commentContent.setMaxLines(Integer.MAX_VALUE);
+        commentContent.setEllipsize(null);
         ((TextView) reply_item.findViewById(R.id.time)).setText(TimeConverter.convertTime(reply.time));
         if(reply.author_email.equals(Credential.getCredential().getSelectedAccountName())){
             reply_item.findViewById(R.id.btn_edit).setOnClickListener(new View.OnClickListener() {
@@ -175,12 +190,15 @@ public class ViewOneComment extends ViewContent {
                             setOnConfirmButtonClickListener(new View.OnClickListener() {
                                 @Override
                                 public void onClick(View v) {
+                                    if(dialog.getInputText().length() == 0){
+                                        Toast.makeText(context, "Please enter your reply!", Toast.LENGTH_LONG).show();
+                                        return;
+                                    }
                                     processingDialog = new Dialog(context, R.style.theme_dialog);
                                     processingDialog.setContentView(R.layout.processing_dialog);
                                     processingDialog.setCancelable(false);
                                     processingDialog.show();
-                                    new EditReplyThread(reply, (TextView) reply_item.findViewById(R.id.comment),
-                                            dialog.getInputText()).start();
+                                    new EditReplyThread(reply, dialog.getInputText()).start();
                                 }
                             }).show();
                 }
@@ -317,9 +335,12 @@ public class ViewOneComment extends ViewContent {
             Message message = new Message();
             HashMap<String, Object> data = new HashMap<String, Object>();
             data.put("task", TASK_EDIT_COMMENT);
-            data.put("newComment", newComment);
             try {
-                data.put("success", comment.edit(newComment));
+                if(comment.edit(newComment)) {
+                    data.put("newComment", Comment.getComment(comment.id));
+                    data.put("success", true);
+                }else
+                    data.put("success", false);
             } catch (IOException e) {
                 data.put("success", false);
                 e.printStackTrace();
@@ -350,12 +371,10 @@ public class ViewOneComment extends ViewContent {
     private class EditReplyThread extends Thread{
 
         private final CommentReply reply;
-        private final TextView replyText;
         private final String newReply;
 
-        public EditReplyThread(CommentReply reply, TextView replyText, String newReply){
+        public EditReplyThread(CommentReply reply, String newReply){
             this.reply = reply;
-            this.replyText = replyText;
             this.newReply = newReply;
         }
 
@@ -365,10 +384,12 @@ public class ViewOneComment extends ViewContent {
             HashMap<String, Object> data = new HashMap<String, Object>();
             data.put("task", TASK_EDIT_REPLY);
             data.put("reply", reply);
-            data.put("replyText", replyText);
-            data.put("newReply", newReply);
             try {
-                data.put("success", reply.edit(newReply));
+                if(reply.edit(newReply)) {
+                    data.put("newReply", CommentReply.getCommentReply(reply.id));
+                    data.put("success", true);
+                }else
+                    data.put("success", false);
             } catch (IOException e) {
                 e.printStackTrace();
                 data.put("success", false);
@@ -398,6 +419,7 @@ public class ViewOneComment extends ViewContent {
             data.put("task", TASK_DELETE_REPLY);
             data.put("parent", parent);
             data.put("replyItem", replyItem);
+            data.put("reply", reply);
             try {
                 data.put("success", reply.delete());
             } catch (IOException e) {
@@ -501,9 +523,11 @@ public class ViewOneComment extends ViewContent {
                     break;
                 case TASK_EDIT_COMMENT:
                     content.processingDialog.dismiss();
-                    if((boolean)data.get("success"))
-                        ((TextView) content.parentLayout.findViewById(R.id.comment)).setText((String) data.get("newComment"));
-                    else
+                    if((boolean)data.get("success")) {
+                        Comment newComment = (Comment)data.get("newComment");
+                        ((TextView) content.parentLayout.findViewById(R.id.comment)).setText(newComment.content);
+                        ((TextView) content.parentLayout.findViewById(R.id.time)).setText(TimeConverter.convertTime(newComment.time));
+                    }else
                         Toast.makeText(content.context, "Unable to edit the comment!", Toast.LENGTH_LONG).show();
                     break;
                 case TASK_DELETE_COMMENT:
@@ -516,9 +540,16 @@ public class ViewOneComment extends ViewContent {
                     break;
                 case TASK_EDIT_REPLY:
                     content.processingDialog.dismiss();
-                    if((boolean)data.get("success"))
-                        ((TextView)data.get("replyText")).setText((String)data.get("newReply"));
-                    else
+                    if((boolean)data.get("success")) {
+                        CommentReply reply = (CommentReply)data.get("reply");
+                        int index = content.replies.indexOf(reply);
+                        content.replies.remove(index);
+                        CommentReply newReply = (CommentReply)data.get("newReply");
+                        content.replies.add(index, newReply);
+                        View reply_item = ((ViewGroup)content.parentLayout.findViewById(R.id.reply_list)).getChildAt(index);
+                        ((TextView) reply_item.findViewById(R.id.comment)).setText(newReply.content);
+                        ((TextView) reply_item.findViewById(R.id.time)).setText(TimeConverter.convertTime(newReply.time));
+                    }else
                         Toast.makeText(content.context, "Unable to edit the reply!", Toast.LENGTH_LONG).show();
                     break;
                 case TASK_DELETE_REPLY:
@@ -526,8 +557,9 @@ public class ViewOneComment extends ViewContent {
                     if((boolean)data.get("success")) {
                         Toast.makeText(content.context, "Successfully delete the reply!", Toast.LENGTH_LONG).show();
                         ((ViewGroup) data.get("parent")).removeView((View) data.get("replyItem"));
+                        content.replies.remove((CommentReply)data.get("reply"));
                         TextView replyNum = (TextView)content.parentLayout.findViewById(R.id.comment_num);
-                        replyNum.setText(Integer.parseInt(replyNum.getText().toString())-1+"");
+                        replyNum.setText(content.replies.size()+"");
                     }else
                         Toast.makeText(content.context, "Unable to delete the reply!", Toast.LENGTH_LONG).show();
                     break;
@@ -537,7 +569,8 @@ public class ViewOneComment extends ViewContent {
                         CommentReply reply = (CommentReply) data.get("reply");
                         View reply_item = content.generateReplyView(reply);
                         TextView commentNumText = (TextView) content.parentLayout.findViewById(R.id.comment_num);
-                        commentNumText.setText(Integer.parseInt(commentNumText.getText().toString())+1+"");
+                        content.replies.add(0, reply);
+                        commentNumText.setText(content.replies.size()+"");
                         ((ViewGroup)content.parentLayout.findViewById(R.id.reply_list)).addView(reply_item, 0);
                         Bitmap photo = Credential.getCurrentUserPhoto();
                         if(photo != null)

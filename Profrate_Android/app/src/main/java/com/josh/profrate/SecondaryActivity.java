@@ -1,6 +1,7 @@
 package com.josh.profrate;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
@@ -26,7 +27,6 @@ import com.josh.profrate.viewContents.ViewOneProsessor;
 import com.josh.profrate.viewContents.ViewProfessors;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -55,7 +55,7 @@ public class SecondaryActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_search_result);
+        setContentView(R.layout.activity_secondary);
         cur_view = getIntent().getIntExtra("view", -1);
         switch(cur_view){
             case SEARCH:
@@ -73,11 +73,11 @@ public class SecondaryActivity extends Activity {
             default:
                 break;
         }
-        activityTitile = ((TextView)findViewById(R.id.search_result_title));
-        content_layout = (RelativeLayout) findViewById(R.id.search_result_content);
-        progressBar = (ProgressBar) findViewById(R.id.search_result_progress_bar);
-        error_sign = (LinearLayout) findViewById(R.id.search_result_error);
-        warning_sign = (LinearLayout) findViewById(R.id.search_result_warning);
+        activityTitile = ((TextView)findViewById(R.id.secondary_title));
+        content_layout = (RelativeLayout) findViewById(R.id.secondary_content);
+        progressBar = (ProgressBar) findViewById(R.id.secondary_progress_bar);
+        error_sign = (LinearLayout) findViewById(R.id.secondary_result_error);
+        warning_sign = (LinearLayout) findViewById(R.id.secondary_result_warning);
         switchContent(cur_view);
     }
 
@@ -93,6 +93,16 @@ public class SecondaryActivity extends Activity {
     public void onStop(){
         super.onStop();
         isActive = false;
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if(content != null && content.isActive()) {
+            if(cur_view == COMMENTS_AND_ARTICLES)
+                ((CommentsAndArticlesView) content).onActivityResult(requestCode, resultCode, data);
+            else if(cur_view == SINGLE_ARTICLE)
+                ((ViewOneArticle)content).onActivityResult(requestCode, resultCode,data);
+        }
     }
 
     private String viewName(int view_id){

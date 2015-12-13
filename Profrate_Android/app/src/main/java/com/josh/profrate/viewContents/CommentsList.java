@@ -74,7 +74,7 @@ public class CommentsList extends ViewContent {
             ((TextView)commentView.findViewById(R.id.time)).setText(TimeConverter.convertTime(comment.time));
             ((TextView)commentView.findViewById(R.id.like_num)).setText(comment.liked_by.size() + "");
             ((TextView)commentView.findViewById(R.id.dislike_num)).setText(comment.disliked_by.size() + "");
-            ((TextView)commentView.findViewById(R.id.comment_num)).setText(comment.reply_num + "");
+            ((TextView)commentView.findViewById(R.id.comment_num)).setText(commentReplies.get(comment.id).size() + "");
             if (comment.liked_by.contains(Credential.getCredential().getSelectedAccountName()))
                 ((ImageView)commentView.findViewById(R.id.like_icon)).setImageResource(R.drawable.like_colored);
             else
@@ -93,12 +93,15 @@ public class CommentsList extends ViewContent {
                                 setOnConfirmButtonClickListener(new View.OnClickListener() {
                                     @Override
                                     public void onClick(View v) {
+                                        if(dialog.getInputText().length() == 0){
+                                            Toast.makeText(context, "Please enter your comment!", Toast.LENGTH_LONG).show();
+                                            return;
+                                        }
                                         processingDialog = new Dialog(context, R.style.theme_dialog);
                                         processingDialog.setContentView(R.layout.processing_dialog);
                                         processingDialog.setCancelable(false);
                                         processingDialog.show();
-                                        new EditCommentThread(comment, dialog.getInputText(),
-                                                (TextView) commentView.findViewById(R.id.comment)).start();
+                                        new EditCommentThread(comment, dialog.getInputText()).start();
                                     }
                                 }).show();
                     }
@@ -125,12 +128,16 @@ public class CommentsList extends ViewContent {
                         setOnConfirmButtonClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
+                                if(dialog.getInputText().length() == 0){
+                                    Toast.makeText(context, "Please enter your reply!", Toast.LENGTH_LONG).show();
+                                    return;
+                                }
                                 processingDialog = new Dialog(context, R.style.theme_dialog);
                                 processingDialog.setContentView(R.layout.processing_dialog);
                                 processingDialog.setCancelable(false);
                                 processingDialog.show();
                                 new ReplyThread(comment, dialog.getInputText(), reply_list,
-                                        (TextView) commentView.findViewById(R.id.comment_num)).start();
+                                        (TextView) commentView.findViewById(R.id.comment_num), comment.id).start();
                             }
                         }).show();
                 }
@@ -153,7 +160,7 @@ public class CommentsList extends ViewContent {
             for (final CommentReply reply : replies) {
                 if (count == MAX_REPLY_NUM) break;
                 View reply_item = generateReplyView(reply, reply_list,
-                        (TextView)commentView.findViewById(R.id.comment_num), author.name);
+                        (TextView)commentView.findViewById(R.id.comment_num), author.name, comment.id);
                 reply_list.addView(reply_item);
                 new LoadPhotoThread(users.get(reply.author_email).photo_url, (ImageView)reply_item.findViewById(R.id.user_photo)).start();
                 count++;
@@ -163,7 +170,7 @@ public class CommentsList extends ViewContent {
         isActive = true;
     }
 
-    private View generateReplyView(final CommentReply reply, final ViewGroup parent, final TextView commentNumText, String commentAuthorName){
+    private View generateReplyView(final CommentReply reply, final ViewGroup parent, final TextView commentNumText, String commentAuthorName, final long commentId){
         final LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         final View reply_item = inflater.inflate(R.layout.comment_reply_item, parent, false);
         User user = users.get(reply.author_email);
@@ -181,12 +188,15 @@ public class CommentsList extends ViewContent {
                             setOnConfirmButtonClickListener(new View.OnClickListener() {
                                 @Override
                                 public void onClick(View v) {
+                                    if(dialog.getInputText().length() == 0){
+                                        Toast.makeText(context, "Please enter your reply!", Toast.LENGTH_LONG).show();
+                                        return;
+                                    }
                                     processingDialog = new Dialog(context, R.style.theme_dialog);
                                     processingDialog.setContentView(R.layout.processing_dialog);
                                     processingDialog.setCancelable(false);
                                     processingDialog.show();
-                                    new EditReplyThread(reply, (TextView) reply_item.findViewById(R.id.comment),
-                                            dialog.getInputText()).start();
+                                    new EditReplyThread(reply, parent, dialog.getInputText(), commentId).start();
                                 }
                             }).show();
                 }
@@ -198,7 +208,7 @@ public class CommentsList extends ViewContent {
                     processingDialog.setContentView(R.layout.processing_dialog);
                     processingDialog.setCancelable(false);
                     processingDialog.show();
-                    new DeleteReplyThread(reply, parent, reply_item, commentNumText).start();
+                    new DeleteReplyThread(reply, parent, reply_item, commentNumText, commentId).start();
                 }
             });
         }else
@@ -336,12 +346,10 @@ public class CommentsList extends ViewContent {
 
         private final Comment comment;
         private final String newComment;
-        private final TextView commentText;
 
-        public EditCommentThread(Comment comment, String newComment, TextView commentText){
+        public EditCommentThread(Comment comment, String newComment){
             this.comment = comment;
             this.newComment = newComment;
-            this.commentText = commentText;
         }
 
         @Override
@@ -349,10 +357,13 @@ public class CommentsList extends ViewContent {
             Message message = new Message();
             HashMap<String, Object> data = new HashMap<String, Object>();
             data.put("task", TASK_EDIT_COMMENT);
-            data.put("newComment", newComment);
-            data.put("commentText", commentText);
+            data.put("comment", comment);
             try {
-                data.put("success", comment.edit(newComment));
+                if(comment.edit(newComment)) {
+                    data.put("newComment", Comment.getComment(comment.id));
+                    data.put("success", true);
+                }else
+                    data.put("success", false);
             } catch (IOException e) {
                 data.put("success", false);
                 e.printStackTrace();
@@ -381,6 +392,7 @@ public class CommentsList extends ViewContent {
             data.put("task", TASK_DELETE_COMMENT);
             data.put("comment_item", comment_item);
             data.put("parent", parent);
+            data.put("comment", comment);
             try{
                 data.put("success", comment.delete());
             }catch (IOException e){
@@ -395,13 +407,15 @@ public class CommentsList extends ViewContent {
     private class EditReplyThread extends Thread{
 
         private final CommentReply reply;
-        private final TextView replyText;
+        private final ViewGroup replyList;
         private final String newReply;
+        private final long commentId;
 
-        public EditReplyThread(CommentReply reply, TextView replyText, String newReply){
+        public EditReplyThread(CommentReply reply, ViewGroup replyList, String newReply, long commentId){
             this.reply = reply;
-            this.replyText = replyText;
+            this.replyList = replyList;
             this.newReply = newReply;
+            this.commentId = commentId;
         }
 
         @Override
@@ -409,10 +423,15 @@ public class CommentsList extends ViewContent {
             Message message = new Message();
             HashMap<String, Object> data = new HashMap<String, Object>();
             data.put("task", TASK_EDIT_REPLY);
-            data.put("replyText", replyText);
-            data.put("newReply", newReply);
+            data.put("replyList", replyList);
+            data.put("reply", reply);
+            data.put("commentId", commentId);
             try {
-                data.put("success", reply.edit(newReply));
+                if(reply.edit(newReply)) {
+                    data.put("newReply", CommentReply.getCommentReply(reply.id));
+                    data.put("success", true);
+                }else
+                    data.put("success", false);
             } catch (IOException e) {
                 e.printStackTrace();
                 data.put("success", false);
@@ -429,12 +448,14 @@ public class CommentsList extends ViewContent {
         private final ViewGroup parent;
         private final View replyItem;
         private final TextView replyNum;
+        private final long commentId;
 
-        public DeleteReplyThread(CommentReply reply, ViewGroup parent, View replyItem, TextView replyNum){
+        public DeleteReplyThread(CommentReply reply, ViewGroup parent, View replyItem, TextView replyNum, long commentId){
             this.parent = parent;
             this.replyItem = replyItem;
             this.reply = reply;
             this.replyNum = replyNum;
+            this.commentId = commentId;
         }
 
         @Override
@@ -445,6 +466,8 @@ public class CommentsList extends ViewContent {
             data.put("parent", parent);
             data.put("replyItem", replyItem);
             data.put("replyNum", replyNum);
+            data.put("reply", reply);
+            data.put("commentId", commentId);
             try {
                 data.put("success", reply.delete());
             } catch (IOException e) {
@@ -463,12 +486,14 @@ public class CommentsList extends ViewContent {
         private final String replyContent;
         private final ViewGroup parent;
         private final TextView commentNumText;
+        private final long commentId;
 
-        public ReplyThread(Comment comment, String replyContent, ViewGroup parent, TextView commentNumText){
+        public ReplyThread(Comment comment, String replyContent, ViewGroup parent, TextView commentNumText, long commentId){
             this.comment = comment;
             this.replyContent = replyContent;
             this.parent = parent;
             this.commentNumText = commentNumText;
+            this.commentId = commentId;
         }
 
         @Override
@@ -479,6 +504,7 @@ public class CommentsList extends ViewContent {
             data.put("parent", parent);
             data.put("commentNumText", commentNumText);
             data.put("commentAuthorName", users.get(comment.author_email).name);
+            data.put("commentId", commentId);
             try {
                 long reply_id = comment.reply(replyContent);
                 if(reply_id != -1) {
@@ -555,9 +581,15 @@ public class CommentsList extends ViewContent {
                     break;
                 case TASK_EDIT_COMMENT:
                     content.processingDialog.dismiss();
-                    if((boolean)data.get("success"))
-                        ((TextView)data.get("commentText")).setText((String)data.get("newComment"));
-                    else
+                    if((boolean)data.get("success")) {
+                        int index = content.comments.indexOf((Comment)data.get("comment"));
+                        content.comments.remove(index);
+                        Comment newComment = (Comment)data.get("newComment");
+                        content.comments.add(index, newComment);
+                        View comment_item = content.parentLayout.getChildAt(index);
+                        ((TextView) comment_item.findViewById(R.id.comment)).setText(newComment.content);
+                        ((TextView) comment_item.findViewById(R.id.time)).setText(TimeConverter.convertTime(newComment.time));
+                    }else
                         Toast.makeText(content.context, "Unable to edit the comment!", Toast.LENGTH_LONG).show();
                     break;
                 case TASK_DELETE_COMMENT:
@@ -565,14 +597,23 @@ public class CommentsList extends ViewContent {
                     if((boolean)data.get("success")){
                         Toast.makeText(content.context, "Successfully delete the comment!", Toast.LENGTH_LONG).show();
                         ((ViewGroup) data.get("parent")).removeView((View) data.get("comment_item"));
+                        content.comments.remove((Comment)data.get("comment"));
                     }else
                         Toast.makeText(content.context, "Unable to delete the comment!", Toast.LENGTH_LONG).show();
                     break;
                 case TASK_EDIT_REPLY:
                     content.processingDialog.dismiss();
-                    if((boolean)data.get("success"))
-                        ((TextView)data.get("replyText")).setText((String)data.get("newReply"));
-                    else
+                    if((boolean)data.get("success")) {
+                        long commentId = (long)data.get("commentId");
+                        List<CommentReply> replies = content.commentReplies.get(commentId);
+                        int index = replies.indexOf((CommentReply)data.get("reply"));
+                        replies.remove(index);
+                        CommentReply newReply = (CommentReply)data.get("newReply");
+                        replies.add(index, newReply);
+                        View reply_item = ((ViewGroup) data.get("replyList")).getChildAt(index);
+                        ((TextView)reply_item.findViewById(R.id.comment)).setText(newReply.content);
+                        ((TextView)reply_item.findViewById(R.id.time)).setText(TimeConverter.convertTime(newReply.time));
+                    }else
                         Toast.makeText(content.context, "Unable to edit the reply!", Toast.LENGTH_LONG).show();
                     break;
                 case TASK_DELETE_REPLY:
@@ -582,7 +623,9 @@ public class CommentsList extends ViewContent {
                         ViewGroup parent = (ViewGroup) data.get("parent");
                         parent.removeView((View) data.get("replyItem"));
                         TextView replyNum = (TextView)data.get("replyNum");
-                        replyNum.setText(Integer.parseInt(replyNum.getText().toString())-1+"");
+                        List<CommentReply> replies = content.commentReplies.get((long)data.get("commentId"));
+                        replies.remove((CommentReply)data.get("reply"));
+                        replyNum.setText(replies.size() + "");
                     }else
                         Toast.makeText(content.context, "Unable to delete the reply!", Toast.LENGTH_LONG).show();
                     break;
@@ -593,14 +636,17 @@ public class CommentsList extends ViewContent {
                         CommentReply reply = (CommentReply) data.get("reply");
                         TextView commentNumText = (TextView) data.get("commentNumText");
                         String commenAuthorName = (String) data.get("commentAuthorName");
-                        View reply_item = content.generateReplyView(reply, parent, commentNumText, commenAuthorName);
+                        long commentId = (long)data.get("commentId");
+                        View reply_item = content.generateReplyView(reply, parent, commentNumText, commenAuthorName, commentId);
                         if(parent.getChildCount() < CommentsList.MAX_REPLY_NUM)
                             parent.addView(reply_item, 0);
                         else {
                             parent.removeViewAt(CommentsList.MAX_REPLY_NUM-1);
                             parent.addView(reply_item, 0);
                         }
-                        commentNumText.setText(Integer.parseInt(commentNumText.getText().toString())+1+"");
+                        List<CommentReply> replies = content.commentReplies.get(commentId);
+                        replies.add(0, reply);
+                        commentNumText.setText(replies.size()+"");
                         Bitmap photo = Credential.getCurrentUserPhoto();
                         if(photo != null)
                             ((ImageView)reply_item.findViewById(R.id.user_photo)).setImageBitmap(photo);

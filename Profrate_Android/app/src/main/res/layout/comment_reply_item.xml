@@ -92,6 +92,8 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="5dp"
             android:textSize="15sp"
+            android:maxLines="5"
+            android:ellipsize="end"
             android:text="You are right! I agree with you!"/>
 
         <TextView

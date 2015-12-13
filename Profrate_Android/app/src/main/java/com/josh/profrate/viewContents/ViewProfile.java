@@ -49,8 +49,8 @@ import java.util.HashMap;
 
 public class ViewProfile extends ViewContent {
 
-    public static final int SELECT_PICTURE = 0;
-    public static final int TAKE_PHOTO = 1;
+    private static final int SELECT_PICTURE = 0;
+    private static final int TAKE_PHOTO = 1;
 
     private static final int TASK_EDIT_USER_NAME = 0;
     private static final int TASK_UPLOAD_PHOTO = 1;

@@ -3,6 +3,7 @@ package com.josh.profrate.viewContents;
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Handler;
 import android.os.Message;
@@ -16,11 +17,11 @@ import android.widget.Toast;
 
 import com.josh.profrate.CommentDialog;
 import com.josh.profrate.R;
+import com.josh.profrate.WriteArticleActivity;
 import com.josh.profrate.dataStructures.Article;
 import com.josh.profrate.dataStructures.Comment;
 import com.josh.profrate.dataStructures.CommentReply;
 import com.josh.profrate.dataStructures.User;
-import com.josh.profrate.elements.BitmapFetcher;
 import com.josh.profrate.elements.Credential;
 import com.josh.profrate.elements.TimeConverter;
 
@@ -31,6 +32,8 @@ import java.util.List;
 import java.util.Map;
 
 public class ViewOneArticle extends ViewContent{
+
+    public static final int CODE_EDIT_ARTICLE = 0;
 
     private static final int TASK_TOGGLE_LIKE = 1;
     private static final int TASK_TOGGLE_DISLIKE = 2;
@@ -84,11 +87,10 @@ public class ViewOneArticle extends ViewContent{
             parentLayout.findViewById(R.id.btn_edit).setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    processingDialog = new Dialog(context, R.style.theme_dialog);
-                    processingDialog.setContentView(R.layout.processing_dialog);
-                    processingDialog.setCancelable(false);
-                    processingDialog.show();
-                    new EditArticleThread("test editing", "test editing").start();
+                    Intent intent = new Intent(context, WriteArticleActivity.class);
+                    intent.putExtra("title", article.title);
+                    intent.putExtra("content", article.content);
+                    ((Activity)context).startActivityForResult(intent, CODE_EDIT_ARTICLE);
                 }
             });
             parentLayout.findViewById(R.id.btn_delete).setOnClickListener(new View.OnClickListener() {
@@ -111,6 +113,10 @@ public class ViewOneArticle extends ViewContent{
                         setOnConfirmButtonClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
+                                if(dialog.getInputText().length() == 0){
+                                    Toast.makeText(context, "Please enter your comment!", Toast.LENGTH_LONG).show();
+                                    return;
+                                }
                                 processingDialog = new Dialog(context, R.style.theme_dialog);
                                 processingDialog.setContentView(R.layout.processing_dialog);
                                 processingDialog.setCancelable(false);
@@ -149,6 +155,16 @@ public class ViewOneArticle extends ViewContent{
     @Override
     public boolean isActive() {
         return isActive;
+    }
+
+    public void onActivityResult(int requestCode, int resultCode, Intent data){
+        if(resultCode == Activity.RESULT_OK && requestCode == CODE_EDIT_ARTICLE) {
+            processingDialog = new Dialog(context, R.style.theme_dialog);
+            processingDialog.setContentView(R.layout.processing_dialog);
+            processingDialog.setCancelable(false);
+            processingDialog.show();
+            new EditArticleThread(data.getStringExtra("title"), data.getStringExtra("content")).start();
+        }
     }
 
     private class LikeThread extends Thread{

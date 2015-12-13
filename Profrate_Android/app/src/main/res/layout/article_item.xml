@@ -117,6 +117,7 @@
                     android:layout_height="wrap_content"
                     android:textSize="15sp"
                     android:maxLines="5"
+                    android:ellipsize="end"
                     android:text="I think Dr. Aziz is a great professor. His Advanced Programming Tools is a very interesting course.I highly recommend everyone to take this course! That is really unbelievable! I really love him! I want to do anything for him! I love him! So much!!!"/>
 
 

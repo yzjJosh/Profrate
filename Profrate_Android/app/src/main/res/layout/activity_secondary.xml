@@ -17,7 +17,7 @@
             android:gravity="center_vertical">
 
             <ImageView
-                android:id="@+id/search_result_back"
+                android:id="@+id/secondary_back"
                 android:layout_width="30dp"
                 android:layout_height="30dp"
                 android:src="@drawable/back"
@@ -28,19 +28,19 @@
                 android:background="@drawable/nav_button_background"/>
 
             <TextView
-                android:id="@+id/search_result_title"
+                android:id="@+id/secondary_title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="5dp"
-                android:layout_toEndOf="@id/search_result_back"
-                android:layout_toStartOf="@+id/search_result_refresh_button"
+                android:layout_toEndOf="@+id/secondary_back"
+                android:layout_toStartOf="@+id/secondary_refresh_button"
                 android:textColor="@color/white"
                 android:textSize="20sp"
                 android:singleLine="true"
                 android:ellipsize="end"/>
 
             <ImageView
-                android:id="@+id/search_result_refresh_button"
+                android:id="@+id/secondary_refresh_button"
                 android:layout_width="30dp"
                 android:layout_height="30dp"
                 android:src="@drawable/refresh"
@@ -58,7 +58,7 @@
             android:layout_height="match_parent">
 
             <ProgressBar
-                android:id="@+id/search_result_progress_bar"
+                android:id="@+id/secondary_progress_bar"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:indeterminate="true"
@@ -67,7 +67,7 @@
                 android:visibility="gone"/>
 
             <LinearLayout
-                android:id="@+id/search_result_error"
+                android:id="@+id/secondary_result_error"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:gravity="center_horizontal"
@@ -91,7 +91,7 @@
             </LinearLayout>
 
             <LinearLayout
-                android:id="@+id/search_result_warning"
+                android:id="@+id/secondary_result_warning"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:gravity="center_horizontal"
@@ -105,7 +105,7 @@
                     android:src="@drawable/attention" />
 
                 <TextView
-                    android:id="@+id/search_result_warning_text"
+                    android:id="@+id/secondary_warning_text"
                     android:layout_marginTop="10dp"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -115,7 +115,7 @@
             </LinearLayout>
 
             <RelativeLayout
-                android:id="@+id/search_result_content"
+                android:id="@+id/secondary_content"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
             </RelativeLayout>

@@ -77,7 +77,7 @@ public class SearchView extends Dialog implements Runnable{
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 suggestionHandler.removeCallbacks(SearchView.this);
-                suggestionHandler.postDelayed(SearchView.this, 300);
+                suggestionHandler.postDelayed(SearchView.this, 200);
                 if (s.length() > 0) {
                     remove.setVisibility(View.VISIBLE);
                 }

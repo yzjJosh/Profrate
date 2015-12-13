@@ -32,7 +32,6 @@ import java.util.Map;
 
 public class ViewOneArticle extends ViewContent{
 
-    private static final int TASK_LOAD_PHOTO = 0;
     private static final int TASK_TOGGLE_LIKE = 1;
     private static final int TASK_TOGGLE_DISLIKE = 2;
     private static final int TASK_EDIT_ARTICLE = 4;
@@ -150,29 +149,6 @@ public class ViewOneArticle extends ViewContent{
     @Override
     public boolean isActive() {
         return isActive;
-    }
-
-    private class LoadPhotoThread extends Thread{
-
-        private final String url;
-        private final ImageView image;
-
-        public LoadPhotoThread(String url, ImageView image){
-            this.url = url;
-            this.image = image;
-        }
-
-        @Override
-        public void run(){
-            Message message = new Message();
-            HashMap<String, Object> data = new HashMap<String, Object>();
-            data.put("task", TASK_LOAD_PHOTO);
-            data.put("bitmap", BitmapFetcher.fetchBitmap(url));
-            data.put("image", image);
-            message.obj = data;
-            handler.sendMessage(message);
-        }
-
     }
 
     private class LikeThread extends Thread{
@@ -327,12 +303,6 @@ public class ViewOneArticle extends ViewContent{
             HashMap<String, Object> data = (HashMap<String, Object>) msg.obj;
             final int task = (int) data.get("task");
             switch (task){
-                case TASK_LOAD_PHOTO:
-                    Bitmap bitmap = (Bitmap) data.get("bitmap");
-                    ImageView image = (ImageView) data.get("image");
-                    if(bitmap != null)
-                        image.setImageBitmap(bitmap);
-                    break;
                 case TASK_TOGGLE_LIKE:
                     Article article = (Article) data.get("article");
                     View commentToolBar = (View) data.get("commentToolBar");

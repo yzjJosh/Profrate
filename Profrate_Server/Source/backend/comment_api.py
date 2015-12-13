@@ -102,11 +102,10 @@ class CommentAPI(remote.Service):
         comment.toggle_dislike(user.email())
         return API.BooleanMessage(value=True)
 
-    @endpoints.method(ReplyRequest, API.BooleanMessage, http_method='POST', name='comment_reply')
+    @endpoints.method(ReplyRequest, API.IntegerMessage, http_method='POST', name='comment_reply')
     def comment_reply(self, request):
         user = endpoints.get_current_user()
         comment = Comment.get_Comment(request.id)
         if not (user and comment):
-            return API.BooleanMessage(value=False)
-        comment.reply(user.email(), request.content)
-        return API.BooleanMessage(value=True)
+            return API.IntegerMessage(value=-1)
+        return API.IntegerMessage(value=comment.reply(user.email(), request.content))

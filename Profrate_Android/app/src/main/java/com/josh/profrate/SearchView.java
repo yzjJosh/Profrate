@@ -22,11 +22,16 @@ import android.widget.TextView;
 import android.os.Handler;
 
 
+import com.josh.profrate.dataStructures.Professor;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
 public class SearchView extends Dialog implements Runnable{
+
+    private static final int MAX_SUGGESTIONS = 10;
 
     private SuggestionHandler suggestionHandler = new SuggestionHandler(this);
     private ImageView remove;
@@ -114,13 +119,13 @@ public class SearchView extends Dialog implements Runnable{
                     suggestionHandler.sendMessage(msg);
                 } else {
                     List<String> sug = cache.get(key);
-                    /*if(sug == null)
+                    if(sug == null)
                         try {
-                            sug = BackEndAPI.getSearchSuggestion(key);
+                            sug = Professor.getSearchSuggestions(MAX_SUGGESTIONS, key);
                             cache.put(key, sug);
                         } catch (IOException e) {
                             e.printStackTrace();
-                        }*/
+                        }
                     if (search.getText().toString().equals(key)) {
                         if(sug != null) {
                             sug.remove(search.getText().toString());

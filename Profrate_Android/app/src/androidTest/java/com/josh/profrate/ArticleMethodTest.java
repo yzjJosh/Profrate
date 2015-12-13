@@ -9,7 +9,7 @@ import com.josh.profrate.elements.Credential;
 
 public class ArticleMethodTest extends ApplicationTestCase<Application> {
 
-    private final String user_account = "yangzijiangjosh@gmail.com";
+    private final String user_account = "yzjjosh@utexas.edu";
     private Article article;
 
     public ArticleMethodTest(){
@@ -19,7 +19,7 @@ public class ArticleMethodTest extends ApplicationTestCase<Application> {
     @Override
     public void setUp() throws Exception {
         Credential.login(user_account, getContext());
-        article = Article.getArticle(5676830073815040L);
+        article = Article.getArticle(5733935958982656L);
     }
 
     @Override
@@ -38,15 +38,15 @@ public class ArticleMethodTest extends ApplicationTestCase<Application> {
 
     public void testComment() throws Exception{
         assertEquals(article.getComments().size(), 0);
-        assertTrue(article.comment("1"));
+        assertTrue(article.comment("1") != -1);
         assertEquals(article.getComments().size(), 1);
-        assertTrue(article.comment("2"));
+        assertTrue(article.comment("2") != -1);
         assertEquals(article.getComments().size(), 2);
-        assertTrue(article.comment("3"));
+        assertTrue(article.comment("3") != -1);
         assertEquals(article.getComments().size(), 3);
-        assertTrue(article.comment("4"));
+        assertTrue(article.comment("4") != -1);
         assertEquals(article.getComments().size(), 4);
-        assertTrue(article.comment("5"));
+        assertTrue(article.comment("5") != -1);
         assertEquals(article.getComments().size(), 5);
     }
 

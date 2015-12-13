@@ -6,6 +6,8 @@ from protorpc import remote
 from protorpc import messages
 from protorpc import message_types
 from Source.service.storage import Professor
+from Source.service.search import search_professors
+from Source.service.search import search_suggestion
 
 package = 'Profrate'
 
@@ -27,6 +29,11 @@ class WriteArtilceRequest(messages.Message):
     id = messages.IntegerField(1, required=True)
     title = messages.StringField(2, required=True)
     content = messages.StringField(3, required=True)
+
+
+class SearchSuggestionRequest(messages.Message):
+    max_num = messages.IntegerField(1, required=True)
+    query_word = messages.StringField(2, required=True)
 
 
 class RatingMessage(messages.Message):
@@ -99,17 +106,19 @@ class MultiProfessorResponse(messages.Message):
 class RatingResponse(messages.Message):
     rating = messages.MessageField(RatingMessage, 1)
 
+class SuggestionsResponse(messages.Message):
+    suggestions = messages.StringField(1, repeated=True)
+
 
 @API.ProfrateAPI.api_class()
 class ProfessorAPI(remote.Service):
-    @endpoints.method(ProfessorCommentRequest, API.BooleanMessage, http_method='POST', name='professor_comment')
+    @endpoints.method(ProfessorCommentRequest, API.IntegerMessage, http_method='POST', name='professor_comment')
     def professor_comment(self, request):
         user = endpoints.get_current_user()
         professor = Professor.get_professor(request.id)
         if not(user and professor):
-            return API.BooleanMessage(value=False)
-        professor.comment(user.email(), request.content)
-        return API.BooleanMessage(value=True)
+            return API.IntegerMessage(value=-1)
+        return API.IntegerMessage(value=professor.comment(user.email(), request.content))
 
     @endpoints.method(RateRequest, API.BooleanMessage, http_method='POST', name='professor_rate')
     def professor_rate(self, request):
@@ -121,14 +130,13 @@ class ProfessorAPI(remote.Service):
                        request.research_skill, request.knowledge_level)
         return API.BooleanMessage(value=True)
 
-    @endpoints.method(WriteArtilceRequest, API.BooleanMessage, http_method='POST', name='professor_write_article')
+    @endpoints.method(WriteArtilceRequest, API.IntegerMessage, http_method='POST', name='professor_write_article')
     def professor_write_article(self, request):
         user = endpoints.get_current_user()
         professor = Professor.get_professor(request.id)
         if not(user and professor):
-            return API.BooleanMessage(value=False)
-        professor.write_article(user.email(), request.title, request.content)
-        return API.BooleanMessage(value=True)
+            return API.IntegerMessage(value=-1)
+        return API.IntegerMessage(value=professor.write_article(user.email(), request.title, request.content))
 
     @endpoints.method(API.IntegerMessage, API.BooleanMessage, http_method='POST', name='professor_toggle_like')
     def professor_toggle_like(self, request):
@@ -186,3 +194,12 @@ class ProfessorAPI(remote.Service):
             return article_api.MultiArticleResponse(articles=[])
         articles = [article_api.createArticleMessage(article) for article in professor.get_articles()]
         return article_api.MultiArticleResponse(articles=articles)
+
+    @endpoints.method(API.StringMessage, MultiProfessorResponse, http_method='GET', name='professor_search')
+    def professor_search(self, request):
+        professors = [createProfessorMessage(professor) for professor in search_professors(request.value)]
+        return MultiProfessorResponse(professors=professors)
+
+    @endpoints.method(SearchSuggestionRequest, SuggestionsResponse, http_method='GET', name='professor_get_search_suggestions')
+    def professor_get_search_suggestions(self, request):
+        return SuggestionsResponse(suggestions=search_suggestion(request.query_word, request.max_num))

@@ -27,10 +27,10 @@ public class GetCommentTest extends ApplicationTestCase<Application> {
 
     public void testGet() throws Exception{
         Professor professor = Professor.getProfessor(6245567495667712L);
-        assertTrue(professor.comment("1"));
-        assertTrue(professor.comment("2"));
-        assertTrue(professor.comment("3"));
-        assertTrue(professor.comment("4"));
+        assertTrue(professor.comment("1") != -1);
+        assertTrue(professor.comment("2") != -1);
+        assertTrue(professor.comment("3") != -1);
+        assertTrue(professor.comment("4") != -1);
         List<Comment> comments = professor.getComments();
         for(Comment comment: comments){
             Comment got = Comment.getComment(comment.id);

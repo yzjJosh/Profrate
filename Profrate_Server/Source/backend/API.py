@@ -22,3 +22,4 @@ class BooleanMessage(messages.Message):
 
 class StringMessage(messages.Message):
     value = messages.StringField(1, required=True)
+

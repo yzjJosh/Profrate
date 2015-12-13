@@ -152,6 +152,8 @@ public class SecondaryActivity extends Activity {
             try{
                 switch (type){
                     case SEARCH:
+                        data.put("professors", Professor.search((String)value));
+                        data.put("success", true);
                         break;
                     case PROFESSOR_DETAIL:
                         data.put("professor", Professor.getProfessor((long)value));
@@ -265,7 +267,7 @@ public class SecondaryActivity extends Activity {
             if((Boolean) data.get("success")) {
                 switch((Integer)data.get("type")) {
                     case SEARCH:
-                        activity.content = new ViewProfessors(activity, activity.content_layout, new ArrayList<Professor>());
+                        activity.content = new ViewProfessors(activity, activity.content_layout, (List<Professor>)data.get("professors"));
                         break;
                     case PROFESSOR_DETAIL:
                         activity.content = new ViewOneProsessor(activity, activity.content_layout, (Professor)data.get("professor"),

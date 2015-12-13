@@ -1,5 +1,7 @@
 package com.josh.profrate.viewContents;
 
+import android.app.Activity;
+import android.app.Dialog;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.Handler;
@@ -9,10 +11,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.josh.profrate.CommentDialog;
 import com.josh.profrate.R;
 import com.josh.profrate.dataStructures.Article;
 import com.josh.profrate.dataStructures.Comment;
@@ -23,6 +25,7 @@ import com.josh.profrate.elements.Credential;
 import com.josh.profrate.elements.TimeConverter;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,6 +35,9 @@ public class ViewOneArticle extends ViewContent{
     private static final int TASK_LOAD_PHOTO = 0;
     private static final int TASK_TOGGLE_LIKE = 1;
     private static final int TASK_TOGGLE_DISLIKE = 2;
+    private static final int TASK_EDIT_ARTICLE = 4;
+    private static final int TASK_DELETE_ARTICLE = 5;
+    private static final int TASK_COMMENT_ARTICLE = 6;
 
     private Article article;
     private List<Comment> comments;
@@ -39,6 +45,7 @@ public class ViewOneArticle extends ViewContent{
     private Map<String, User> users;
     private Handler handler = new TaskHandler(this);
     private ViewContent commentListContent;
+    private Dialog processingDialog;
     private boolean isTogglingLikeness;
     private boolean isActive;
 
@@ -51,6 +58,7 @@ public class ViewOneArticle extends ViewContent{
         this.commentReplies = commentReplies;
         this.isTogglingLikeness = false;
         this.isActive = false;
+        users.put(Credential.getCurrentUser().email, Credential.getCurrentUser());
     }
 
     @Override
@@ -73,10 +81,44 @@ public class ViewOneArticle extends ViewContent{
             ((ImageView)parentLayout.findViewById(R.id.dislike_icon)).setImageResource(R.drawable.dislike_colored);
         else
             ((ImageView)parentLayout.findViewById(R.id.dislike_icon)).setImageResource(R.drawable.dislike_bw);
+        if(author.email.equals(Credential.getCredential().getSelectedAccountName())){
+            parentLayout.findViewById(R.id.btn_edit).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    processingDialog = new Dialog(context, R.style.theme_dialog);
+                    processingDialog.setContentView(R.layout.processing_dialog);
+                    processingDialog.setCancelable(false);
+                    processingDialog.show();
+                    new EditArticleThread("test editing", "test editing").start();
+                }
+            });
+            parentLayout.findViewById(R.id.btn_delete).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    processingDialog = new Dialog(context, R.style.theme_dialog);
+                    processingDialog.setContentView(R.layout.processing_dialog);
+                    processingDialog.setCancelable(false);
+                    processingDialog.show();
+                    new DeleteArticleThread().start();
+                }
+            });
+        }else
+            parentLayout.findViewById(R.id.edit_btn_area).setVisibility(View.GONE);
         parentLayout.findViewById(R.id.comment_btn).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                final CommentDialog dialog = new CommentDialog(context);
+                dialog.setHint("Type comment").setConfirmButtonText("Comment").
+                        setOnConfirmButtonClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                processingDialog = new Dialog(context, R.style.theme_dialog);
+                                processingDialog.setContentView(R.layout.processing_dialog);
+                                processingDialog.setCancelable(false);
+                                processingDialog.show();
+                                new CommentArticleThread(dialog.getInputText()).start();
+                            }
+                        }).show();
             }
         });
         parentLayout.findViewById(R.id.like_btn).setOnClickListener(new View.OnClickListener() {
@@ -195,6 +237,81 @@ public class ViewOneArticle extends ViewContent{
 
     }
 
+    private class EditArticleThread extends Thread{
+
+        private final String newTitle;
+        private final String newContent;
+
+        public EditArticleThread(String newTitle, String newContent){
+            this.newTitle = newTitle;
+            this.newContent = newContent;
+        }
+
+        @Override
+        public void run(){
+            Message message = new Message();
+            HashMap<String, Object> data = new HashMap<String, Object>();
+            data.put("task", TASK_EDIT_ARTICLE);
+            data.put("newTitle", newTitle);
+            data.put("newContent", newContent);
+            try {
+                data.put("success", article.edit(newTitle, newContent));
+            } catch (IOException e) {
+                data.put("success", false);
+                e.printStackTrace();
+            }
+            message.obj = data;
+            handler.sendMessage(message);
+        }
+    }
+
+    private class DeleteArticleThread extends Thread{
+
+        @Override
+        public void run(){
+            Message message = new Message();
+            HashMap<String, Object> data = new HashMap<String, Object>();
+            data.put("task", TASK_DELETE_ARTICLE);
+            try{
+                data.put("success", article.delete());
+            }catch (IOException e){
+                e.printStackTrace();
+                data.put("success", false);
+            }
+            message.obj = data;
+            handler.sendMessage(message);
+        }
+    }
+
+    private class CommentArticleThread extends Thread{
+
+        private final String commentContent;
+
+        public CommentArticleThread(String commentContent){
+            this.commentContent = commentContent;
+        }
+
+        @Override
+        public void run(){
+            Message message = new Message();
+            HashMap<String, Object> data = new HashMap<String, Object>();
+            data.put("task", TASK_COMMENT_ARTICLE);
+            try {
+                long comment_id = article.comment(commentContent);
+                if(comment_id != -1){
+                    data.put("comment", Comment.getComment(comment_id));
+                    data.put("success", true);
+                }else
+                    data.put("success", false);
+            } catch (IOException e) {
+                e.printStackTrace();
+                data.put("success", false);
+            }
+            message.obj = data;
+            handler.sendMessage(message);
+        }
+    }
+
     private static class TaskHandler extends Handler {
 
         private ViewOneArticle content;
@@ -251,6 +368,34 @@ public class ViewOneArticle extends ViewContent{
                         ((TextView)commentToolBar.findViewById(R.id.dislike_num)).setText(article.disliked_by.size() + "");
                     }else
                         Toast.makeText(content.context, "Unable to toggle disliking the article!", Toast.LENGTH_LONG).show();
+                    break;
+                case TASK_EDIT_ARTICLE:
+                    content.processingDialog.dismiss();
+                    if((boolean)data.get("success")) {
+                        ((TextView) content.parentLayout.findViewById(R.id.title)).setText((String) data.get("newTitle"));
+                        ((TextView) content.parentLayout.findViewById(R.id.content)).setText((String) data.get("newContent"));
+                    }else
+                        Toast.makeText(content.context, "Unable to edit the article!", Toast.LENGTH_LONG).show();
+                    break;
+                case TASK_DELETE_ARTICLE:
+                    content.processingDialog.dismiss();
+                    if((boolean)data.get("success")) {
+                        Toast.makeText(content.context, "Successfully delete the article!", Toast.LENGTH_LONG).show();
+                        ((Activity)content.context).finish();
+                    }else
+                        Toast.makeText(content.context, "Unable to delete the article!", Toast.LENGTH_LONG).show();
+                    break;
+                case TASK_COMMENT_ARTICLE:
+                    content.processingDialog.dismiss();
+                    if((boolean)data.get("success")){
+                        Comment comment = (Comment)data.get("comment");
+                        content.comments.add(0, comment);
+                        content.commentReplies.put(comment.id, new ArrayList<CommentReply>());
+                        content.commentListContent.clear();
+                        content.commentListContent.show();
+                        ((TextView)content.parentLayout.findViewById(R.id.comment_num)).setText(content.comments.size()+"");
+                    }else
+                        Toast.makeText(content.context, "Unable to comment this article", Toast.LENGTH_LONG).show();
                     break;
                 default:
                     break;

@@ -14,6 +14,7 @@ import com.josh.profrate.dataStructures.Comment;
 import com.josh.profrate.dataStructures.CommentReply;
 import com.josh.profrate.dataStructures.Professor;
 import com.josh.profrate.dataStructures.User;
+import com.josh.profrate.elements.Credential;
 import com.josh.profrate.elements.RatingStar;
 
 import java.util.List;
@@ -48,6 +49,7 @@ public class CommentsAndArticlesView extends ViewContent{
         this.photo = photo;
         this.isActive = false;
         this.viewType = VIEW_COMMENTS;
+        users.put(Credential.getCurrentUser().email, Credential.getCurrentUser());
     }
 
     @Override
@@ -65,6 +67,8 @@ public class CommentsAndArticlesView extends ViewContent{
         else
             parentLayout.findViewById(R.id.professor_special_title).setVisibility(View.GONE);
         ((RatingStar)parentLayout.findViewById(R.id.professor_rating)).setRating(professor.overall_rating.overallRating());
+        ((TextView)parentLayout.findViewById(R.id.comment_num)).setText(professor.comment_num + "");
+        ((TextView)parentLayout.findViewById(R.id.article_num)).setText(professor.article_num + "");
         parentLayout.findViewById(R.id.comments_btn).setOnClickListener(commentsBtnClickListener);
         parentLayout.findViewById(R.id.articles_btn).setOnClickListener(articlesBtnClickListener);
         if(viewType == VIEW_COMMENTS) {

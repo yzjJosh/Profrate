@@ -54,14 +54,13 @@ class MultiArticleResponse(messages.Message):
 
 @API.ProfrateAPI.api_class()
 class ArticleAPI(remote.Service):
-    @endpoints.method(ArticleCommentRequest, API.BooleanMessage, http_method='POST', name='article_comment')
+    @endpoints.method(ArticleCommentRequest, API.IntegerMessage, http_method='POST', name='article_comment')
     def article_comment(self, request):
         user = endpoints.get_current_user()
         article = Article.get_article(request.id)
         if not(user and article):
-            return API.BooleanMessage(value=False)
-        article.comment(user.email(), request.content)
-        return API.BooleanMessage(value=True)
+            return API.IntegerMessage(value=-1)
+        return API.IntegerMessage(value=article.comment(user.email(), request.content))
 
     @endpoints.method(API.IntegerMessage, API.BooleanMessage, http_method='POST', name='article_toggle_like')
     def article_toggle_like(self, request):

@@ -43,17 +43,17 @@ public class ProfessorMethodTest extends ApplicationTestCase<Application> {
 
     public void testComment() throws Exception{
         assertEquals(professor.getComments().size(), 0);
-        assertTrue(professor.comment("I love him!"));
+        assertTrue(professor.comment("I love him!") != -1);
         assertEquals(professor.getComments().size(), 1);
-        assertTrue(professor.comment("Hahaha!"));
+        assertTrue(professor.comment("Hahaha!") != -1);
         assertEquals(professor.getComments().size(), 2);
     }
 
     public void testArticle() throws Exception{
         assertEquals(professor.getArticles().size(), 0);
-        assertTrue(professor.writeArticle("f", ""));
+        assertTrue(professor.writeArticle("f", "") != -1);
         assertEquals(professor.getArticles().size(), 1);
-        assertTrue(professor.writeArticle("sfdsd", "sdfsdg"));
+        assertTrue(professor.writeArticle("sfdsd", "sdfsdg") != -1);
         assertEquals(professor.getArticles().size(), 2);
     }
 

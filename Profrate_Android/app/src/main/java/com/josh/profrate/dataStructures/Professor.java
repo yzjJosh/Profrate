@@ -58,8 +58,17 @@ public class Professor {
         return BackendAPI.professor_get_all();
     }
 
+    public static List<Professor> search(String query_words) throws IOException{
+        if(query_words == null) return new ArrayList<Professor>();
+        return BackendAPI.professor_search(query_words);
+    }
 
-    public boolean comment(String content) throws IOException{
+    public static List<String> getSearchSuggestions(long maxSuggestionNum, String query_words) throws IOException{
+        if(query_words == null) return  new ArrayList<String>();
+        return BackendAPI.professor_get_search_suggestions(maxSuggestionNum, query_words);
+    }
+
+    public long comment(String content) throws IOException{
         return BackendAPI.professor_comment(id, content, Credential.getCredential());
     }
 
@@ -68,7 +77,7 @@ public class Professor {
                 rating.research_skill, rating.knowledge_level, Credential.getCredential());
     }
 
-    public boolean writeArticle(String title, String content) throws IOException{
+    public long writeArticle(String title, String content) throws IOException{
         return BackendAPI.professor_write_article(id, title, content, Credential.getCredential());
     }
 

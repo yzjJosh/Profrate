@@ -134,7 +134,7 @@ public class ViewOneProsessor extends ViewContent {
             } else
                 parentLayout.findViewById(R.id.professor_research_groups_area).setVisibility(View.GONE);
         }
-        ((TextView)parentLayout.findViewById(R.id.comment_num)).setText(professor.comment_num+"");
+        ((TextView)parentLayout.findViewById(R.id.comment_num)).setText(professor.comment_num+professor.article_num+"");
         ((TextView)parentLayout.findViewById(R.id.like_num)).setText(professor.liked_by.size()+"");
         ((TextView)parentLayout.findViewById(R.id.dislike_num)).setText(professor.disliked_by.size()+"");
         if(professor.liked_by.contains(Credential.getCredential().getSelectedAccountName()))

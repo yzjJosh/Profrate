@@ -33,7 +33,7 @@ public class Article {
         return BackendAPI.article_get(article_id);
     }
 
-    public boolean comment(String content) throws IOException{
+    public long comment(String content) throws IOException{
         return BackendAPI.article_comment(id, content, Credential.getCredential());
     }
 

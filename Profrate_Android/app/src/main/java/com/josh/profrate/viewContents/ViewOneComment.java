@@ -15,6 +15,7 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.josh.profrate.CommentDialog;
 import com.josh.profrate.R;
 import com.josh.profrate.dataStructures.Comment;
 import com.josh.profrate.dataStructures.CommentReply;
@@ -37,6 +38,7 @@ public class ViewOneComment extends ViewContent {
     private static final int TASK_DELETE_COMMENT = 4;
     private static final int TASK_EDIT_REPLY = 5;
     private static final int TASK_DELETE_REPLY = 6;
+    private static final int TASK_REPLY = 7;
 
     private Comment comment;
     private List<CommentReply> replies;
@@ -54,6 +56,7 @@ public class ViewOneComment extends ViewContent {
         this.users = users;
         this.isTogglingLikeness = false;
         this.isActive = false;
+        users.put(Credential.getCurrentUser().email, Credential.getCurrentUser());
     }
 
     @Override
@@ -86,11 +89,19 @@ public class ViewOneComment extends ViewContent {
             commentView.findViewById(R.id.btn_edit).setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    processingDialog = new Dialog(context, R.style.theme_dialog);
-                    processingDialog.setContentView(R.layout.processing_dialog);
-                    processingDialog.setCancelable(false);
-                    processingDialog.show();
-                    new EditCommentThread("test editing").start();
+                    final CommentDialog dialog = new CommentDialog(context);
+                    dialog.setHint("Edit comment").setConfirmButtonText("Edit").
+                            setInputText(((TextView)commentView.findViewById(R.id.comment)).getText().toString()).
+                            setOnConfirmButtonClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    processingDialog = new Dialog(context, R.style.theme_dialog);
+                                    processingDialog.setContentView(R.layout.processing_dialog);
+                                    processingDialog.setCancelable(false);
+                                    processingDialog.show();
+                                    new EditCommentThread(dialog.getInputText()).start();
+                                }
+                            }).show();
                 }
             });
             commentView.findViewById(R.id.btn_delete).setOnClickListener(new View.OnClickListener() {
@@ -108,7 +119,18 @@ public class ViewOneComment extends ViewContent {
         commentView.findViewById(R.id.comment_btn).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                final CommentDialog dialog = new CommentDialog(context);
+                dialog.setHint("Reply "+users.get(comment.author_email).name).setConfirmButtonText("Reply").
+                        setOnConfirmButtonClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                processingDialog = new Dialog(context, R.style.theme_dialog);
+                                processingDialog.setContentView(R.layout.processing_dialog);
+                                processingDialog.setCancelable(false);
+                                processingDialog.show();
+                                new ReplyThread(comment, dialog.getInputText()).start();
+                            }
+                        }).show();
             }
         });
         commentView.findViewById(R.id.like_btn).setOnClickListener(new View.OnClickListener() {
@@ -126,39 +148,56 @@ public class ViewOneComment extends ViewContent {
         new LoadPhotoThread(author.photo_url, (ImageView)commentView.findViewById(R.id.user_photo)).start();
         final LinearLayout reply_list = (LinearLayout) commentView.findViewById(R.id.reply_list);
         for(final CommentReply reply: replies){
-            User user = users.get(reply.author_email);
-            final View reply_item = inflater.inflate(R.layout.comment_reply_item, reply_list, false);
-            ((TextView) reply_item.findViewById(R.id.user_name)).setText(user.name);
-            ((TextView) reply_item.findViewById(R.id.replyToName)).setText(author.name);
-            ((TextView) reply_item.findViewById(R.id.comment)).setText(reply.content);
-            ((TextView) reply_item.findViewById(R.id.time)).setText(TimeConverter.convertTime(reply.time));
-            if(reply.author_email.equals(Credential.getCredential().getSelectedAccountName())){
-                reply_item.findViewById(R.id.btn_edit).setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        processingDialog = new Dialog(context, R.style.theme_dialog);
-                        processingDialog.setContentView(R.layout.processing_dialog);
-                        processingDialog.setCancelable(false);
-                        processingDialog.show();
-                        new EditReplyThread(reply, (TextView)reply_item.findViewById(R.id.comment), "Test edit!").start();
-                    }
-                });
-                reply_item.findViewById(R.id.btn_delete).setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        processingDialog = new Dialog(context, R.style.theme_dialog);
-                        processingDialog.setContentView(R.layout.processing_dialog);
-                        processingDialog.setCancelable(false);
-                        processingDialog.show();
-                        new DeleteReplyThread(reply, reply_list, reply_item).start();
-                    }
-                });
-            }else
-                reply_item.findViewById(R.id.edit_btn_area).setVisibility(View.GONE);
+            View reply_item = generateReplyView(reply);
             reply_list.addView(reply_item);
-            new LoadPhotoThread(user.photo_url, (ImageView)reply_item.findViewById(R.id.user_photo)).start();
+            new LoadPhotoThread(users.get(reply.author_email).photo_url,
+                    (ImageView)reply_item.findViewById(R.id.user_photo)).start();
         }
         this.isActive = true;
+    }
+
+    private View generateReplyView(final CommentReply reply){
+        final LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        final ViewGroup reply_list = (ViewGroup)parentLayout.findViewById(R.id.reply_list);
+        final View reply_item = inflater.inflate(R.layout.comment_reply_item, reply_list, false);
+        User user = users.get(reply.author_email);
+        ((TextView) reply_item.findViewById(R.id.user_name)).setText(user.name);
+        ((TextView) reply_item.findViewById(R.id.replyToName)).setText(users.get(comment.author_email).name);
+        ((TextView) reply_item.findViewById(R.id.comment)).setText(reply.content);
+        ((TextView) reply_item.findViewById(R.id.time)).setText(TimeConverter.convertTime(reply.time));
+        if(reply.author_email.equals(Credential.getCredential().getSelectedAccountName())){
+            reply_item.findViewById(R.id.btn_edit).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    final CommentDialog dialog = new CommentDialog(context);
+                    dialog.setHint("Edit reply").setConfirmButtonText("Edit").
+                            setInputText(((TextView)reply_item.findViewById(R.id.comment)).getText().toString()).
+                            setOnConfirmButtonClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    processingDialog = new Dialog(context, R.style.theme_dialog);
+                                    processingDialog.setContentView(R.layout.processing_dialog);
+                                    processingDialog.setCancelable(false);
+                                    processingDialog.show();
+                                    new EditReplyThread(reply, (TextView) reply_item.findViewById(R.id.comment),
+                                            dialog.getInputText()).start();
+                                }
+                            }).show();
+                }
+            });
+            reply_item.findViewById(R.id.btn_delete).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    processingDialog = new Dialog(context, R.style.theme_dialog);
+                    processingDialog.setContentView(R.layout.processing_dialog);
+                    processingDialog.setCancelable(false);
+                    processingDialog.show();
+                    new DeleteReplyThread(reply, reply_list, reply_item).start();
+                }
+            });
+        }else
+            reply_item.findViewById(R.id.edit_btn_area).setVisibility(View.GONE);
+        return reply_item;
     }
 
     @Override
@@ -371,6 +410,38 @@ public class ViewOneComment extends ViewContent {
 
     }
 
+    private class ReplyThread extends Thread{
+
+        private final Comment comment;
+        private final String replyContent;
+
+        public ReplyThread(Comment comment, String replyContent){
+            this.comment = comment;
+            this.replyContent = replyContent;
+        }
+
+        @Override
+        public void run(){
+            Message message = new Message();
+            HashMap<String, Object> data = new HashMap<String, Object>();
+            data.put("task", TASK_REPLY);
+            try {
+                long reply_id = comment.reply(replyContent);
+                if(reply_id != -1) {
+                    data.put("reply", CommentReply.getCommentReply(reply_id));
+                    data.put("success", true);
+                }else
+                    data.put("success", false);
+            } catch (IOException e) {
+                e.printStackTrace();
+                data.put("success", false);
+            }
+            message.obj = data;
+            handler.sendMessage(message);
+        }
+
+    }
+
     private static class TaskHandler extends Handler {
 
         private ViewOneComment content;
@@ -436,6 +507,7 @@ public class ViewOneComment extends ViewContent {
                         Toast.makeText(content.context, "Unable to edit the comment!", Toast.LENGTH_LONG).show();
                     break;
                 case TASK_DELETE_COMMENT:
+                    content.processingDialog.dismiss();
                     if((boolean)data.get("success")) {
                         Toast.makeText(content.context, "Successfully delete the comment!", Toast.LENGTH_LONG).show();
                         ((Activity)content.context).finish();
@@ -449,7 +521,7 @@ public class ViewOneComment extends ViewContent {
                     else
                         Toast.makeText(content.context, "Unable to edit the reply!", Toast.LENGTH_LONG).show();
                     break;
-                default:
+                case TASK_DELETE_REPLY:
                     content.processingDialog.dismiss();
                     if((boolean)data.get("success")) {
                         Toast.makeText(content.context, "Successfully delete the reply!", Toast.LENGTH_LONG).show();
@@ -458,6 +530,22 @@ public class ViewOneComment extends ViewContent {
                         replyNum.setText(Integer.parseInt(replyNum.getText().toString())-1+"");
                     }else
                         Toast.makeText(content.context, "Unable to delete the reply!", Toast.LENGTH_LONG).show();
+                    break;
+                case TASK_REPLY:
+                    content.processingDialog.dismiss();
+                    if((boolean)data.get("success")){
+                        CommentReply reply = (CommentReply) data.get("reply");
+                        View reply_item = content.generateReplyView(reply);
+                        TextView commentNumText = (TextView) content.parentLayout.findViewById(R.id.comment_num);
+                        commentNumText.setText(Integer.parseInt(commentNumText.getText().toString())+1+"");
+                        ((ViewGroup)content.parentLayout.findViewById(R.id.reply_list)).addView(reply_item, 0);
+                        Bitmap photo = Credential.getCurrentUserPhoto();
+                        if(photo != null)
+                            ((ImageView)reply_item.findViewById(R.id.user_photo)).setImageBitmap(photo);
+                    }else
+                        Toast.makeText(content.context, "Unable to reply the comment!", Toast.LENGTH_LONG).show();
+                    break;
+                default:
                     break;
             }
         }

@@ -53,7 +53,7 @@ public class Comment {
         return BackendAPI.comment_toggle_dislike(id, Credential.getCredential());
     }
 
-    public boolean reply(String content) throws IOException{
+    public long reply(String content) throws IOException{
         return BackendAPI.comment_reply(id, content, Credential.getCredential());
     }
 

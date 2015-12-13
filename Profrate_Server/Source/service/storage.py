@@ -80,6 +80,7 @@ class Comment(ndb.Model):
         reply.put()
         self.reply_num = self.reply_num + 1
         self.put()
+        return reply.get_id()
 
 
 class CommentReply(ndb.Model):
@@ -180,6 +181,7 @@ class Article(ndb.Model):
         comment.put()
         self.comment_num = self.comment_num + 1
         self.put()
+        return comment.get_id()
 
 
 class ProfRating(ndb.Model):
@@ -287,12 +289,14 @@ class Professor(ndb.Model):
         comment.put()
         self.comment_num = self.comment_num + 1
         self.put()
+        return comment.get_id()
 
     def write_article(self, user_email, title, content):
         article = Article(parent=Article.parent_key(), target_id=self.get_id(), author_email=user_email, title=title, content=content)
         article.put()
         self.article_num = self.article_num + 1
         self.put()
+        return article.get_id()
 
     def toggle_like(self, user_email):
         if user_email in self.liked_by:

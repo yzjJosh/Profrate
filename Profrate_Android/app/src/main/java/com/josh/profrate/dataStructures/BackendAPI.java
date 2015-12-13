@@ -35,8 +35,8 @@ public class BackendAPI {
         return profrate.build();
     }
 
-    static boolean professor_comment(long prof_id, String content, GoogleAccountCredential credential) throws IOException{
-        if(credential == null) return false;
+    static long professor_comment(long prof_id, String content, GoogleAccountCredential credential) throws IOException{
+        if(credential == null) return -1;
         ProfrateProfessorCommentRequest request = new ProfrateProfessorCommentRequest();
         request.setId(prof_id);
         request.setContent(content);
@@ -55,9 +55,9 @@ public class BackendAPI {
         return buildAPI(credential).professorRate(request).execute().getValue();
     }
 
-    static boolean professor_write_article(long prof_id, String title, String content,
+    static long professor_write_article(long prof_id, String title, String content,
                                                   GoogleAccountCredential credential) throws IOException{
-        if(credential == null) return false;
+        if(credential == null) return -1;
         ProfrateWriteArtilceRequest request = new ProfrateWriteArtilceRequest();
         request.setId(prof_id);
         request.setTitle(title);
@@ -91,6 +91,20 @@ public class BackendAPI {
             for(ProfrateProfessorMessage prof: professors)
                 ret.add(new Professor(prof));
         return ret;
+    }
+
+    static List<Professor> professor_search(String query_words) throws IOException{
+        List<Professor> ret = new ArrayList<Professor>();
+        List<ProfrateProfessorMessage> professors = buildAPI(null).professorSearch(query_words).execute().getProfessors();
+        if(professors != null)
+            for(ProfrateProfessorMessage prof: professors)
+                ret.add(new Professor(prof));
+        return ret;
+    }
+
+    static List<String> professor_get_search_suggestions(long maxNum, String query_words) throws IOException{
+        List<String> suggestions = buildAPI(null).professorGetSearchSuggestions(maxNum, query_words).execute().getSuggestions();
+        return suggestions == null? new ArrayList<String>(): suggestions;
     }
 
     static List<Comment> professor_get_comments(long prof_id) throws IOException{
@@ -159,8 +173,8 @@ public class BackendAPI {
         return buildAPI(credential).commentToggleDislike(request).execute().getValue();
     }
 
-    static boolean comment_reply(long comment_id, String content, GoogleAccountCredential credential) throws IOException{
-        if(credential == null) return false;
+    static long comment_reply(long comment_id, String content, GoogleAccountCredential credential) throws IOException{
+        if(credential == null) return -1;
         ProfrateReplyRequest request = new ProfrateReplyRequest();
         request.setId(comment_id);
         request.setContent(content);
@@ -187,8 +201,8 @@ public class BackendAPI {
         return reply==null? null: new CommentReply(reply);
     }
 
-    static boolean article_comment(long article_id, String content, GoogleAccountCredential credential) throws IOException{
-        if(credential == null) return false;
+    static long article_comment(long article_id, String content, GoogleAccountCredential credential) throws IOException{
+        if(credential == null) return -1;
         ProfrateArticleCommentRequest request =  new ProfrateArticleCommentRequest();
         request.setId(article_id);
         request.setContent(content);

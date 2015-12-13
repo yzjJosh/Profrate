@@ -18,7 +18,7 @@ public class CommentMethodTest extends ApplicationTestCase<Application> {
     @Override
     public void setUp() throws Exception {
         Credential.login(user_account, getContext());
-        comment = Comment.getComment(5766466041282560L);
+        comment = Comment.getComment(5697982787747840L);
     }
 
     @Override
@@ -36,15 +36,15 @@ public class CommentMethodTest extends ApplicationTestCase<Application> {
 
     public void testReply() throws Exception{
         assertEquals(comment.getReplies().size(), 0);
-        assertTrue(comment.reply("1"));
+        assertTrue(comment.reply("1") != -1);
         assertEquals(comment.getReplies().size(), 1);
-        assertTrue(comment.reply("2"));
+        assertTrue(comment.reply("2") != -1);
         assertEquals(comment.getReplies().size(), 2);
-        assertTrue(comment.reply("3"));
+        assertTrue(comment.reply("3") != -1);
         assertEquals(comment.getReplies().size(), 3);
-        assertTrue(comment.reply("4"));
+        assertTrue(comment.reply("4") != -1);
         assertEquals(comment.getReplies().size(), 4);
-        assertTrue(comment.reply("5"));
+        assertTrue(comment.reply("5") != -1);
         assertEquals(comment.getReplies().size(), 5);
     }
 

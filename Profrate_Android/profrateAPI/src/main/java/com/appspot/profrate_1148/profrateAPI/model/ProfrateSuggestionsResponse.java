@@ -19,7 +19,7 @@
 package com.appspot.profrate_1148.profrateAPI.model;
 
 /**
- * Model definition for SourceBackendAPIStringMessage.
+ * Model definition for ProfrateSuggestionsResponse.
  *
  * <p> This is the Java data model class that specifies how to parse/serialize into the JSON that is
  * transmitted over HTTP when working with the profrateAPI. For a detailed explanation see:
@@ -29,37 +29,37 @@ package com.appspot.profrate_1148.profrateAPI.model;
  * @author Google, Inc.
  */
 @SuppressWarnings("javadoc")
-public final class SourceBackendAPIStringMessage extends com.google.api.client.json.GenericJson {
+public final class ProfrateSuggestionsResponse extends com.google.api.client.json.GenericJson {
 
   /**
    * The value may be {@code null}.
    */
   @com.google.api.client.util.Key
-  private java.lang.String value;
+  private java.util.List<java.lang.String> suggestions;
 
   /**
    * @return value or {@code null} for none
    */
-  public java.lang.String getValue() {
-    return value;
+  public java.util.List<java.lang.String> getSuggestions() {
+    return suggestions;
   }
 
   /**
-   * @param value value or {@code null} for none
+   * @param suggestions suggestions or {@code null} for none
    */
-  public SourceBackendAPIStringMessage setValue(java.lang.String value) {
-    this.value = value;
+  public ProfrateSuggestionsResponse setSuggestions(java.util.List<java.lang.String> suggestions) {
+    this.suggestions = suggestions;
     return this;
   }
 
   @Override
-  public SourceBackendAPIStringMessage set(String fieldName, Object value) {
-    return (SourceBackendAPIStringMessage) super.set(fieldName, value);
+  public ProfrateSuggestionsResponse set(String fieldName, Object value) {
+    return (ProfrateSuggestionsResponse) super.set(fieldName, value);
   }
 
   @Override
-  public SourceBackendAPIStringMessage clone() {
-    return (SourceBackendAPIStringMessage) super.clone();
+  public ProfrateSuggestionsResponse clone() {
+    return (ProfrateSuggestionsResponse) super.clone();
   }
 
 }

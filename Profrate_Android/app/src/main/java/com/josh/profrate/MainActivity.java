@@ -107,15 +107,15 @@ public class MainActivity extends Activity {
     private List<Map<String, Object>> getMenuData(){
         List<Map<String, Object>> data = new ArrayList<Map<String, Object>>();
         HashMap<String, Object> item = new HashMap<String, Object>();
-        item.put("icon", R.drawable.error);
+        item.put("icon", R.drawable.professor);
         item.put("view_id", VIEW_PROFESSORS);
         data.add(item);
         item = new HashMap<String, Object>();
-        item.put("icon", R.drawable.error);
+        item.put("icon", R.drawable.user);
         item.put("view_id", PROFILE);
         data.add(item);
         item = new HashMap<String, Object>();
-        item.put("icon", R.drawable.user);
+        item.put("icon", R.drawable.two_users);
         item.put("view_id", LOG_OUT);
         data.add(item);
         return data;

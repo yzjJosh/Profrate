@@ -1,8 +1,10 @@
 package com.josh.profrate.viewContents;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.os.Handler;
 import android.os.Message;
@@ -115,11 +117,28 @@ public class ViewOneComment extends ViewContent {
             commentView.findViewById(R.id.btn_delete).setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    processingDialog = new Dialog(context, R.style.theme_dialog);
-                    processingDialog.setContentView(R.layout.processing_dialog);
-                    processingDialog.setCancelable(false);
-                    processingDialog.show();
-                    new DeleteCommentThread().start();
+                    AlertDialog alertDialog = new AlertDialog.Builder(context).create();
+                    alertDialog.setTitle("Warning");
+                    alertDialog.setIcon(R.drawable.attention);
+                    alertDialog.setMessage("Are you sure you want to delete this comment? All the data are unrecoverable.");
+                    alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "OK",
+                            new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int which) {
+                                    dialog.dismiss();
+                                    processingDialog = new Dialog(context, R.style.theme_dialog);
+                                    processingDialog.setContentView(R.layout.processing_dialog);
+                                    processingDialog.setCancelable(false);
+                                    processingDialog.show();
+                                    new DeleteCommentThread().start();
+                                }
+                            });
+                    alertDialog.setButton(AlertDialog.BUTTON_NEGATIVE, "Cancel",
+                            new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int which) {
+                                    dialog.dismiss();
+                                }
+                            });
+                    alertDialog.show();
                 }
             });
         }else
@@ -206,11 +225,28 @@ public class ViewOneComment extends ViewContent {
             reply_item.findViewById(R.id.btn_delete).setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    processingDialog = new Dialog(context, R.style.theme_dialog);
-                    processingDialog.setContentView(R.layout.processing_dialog);
-                    processingDialog.setCancelable(false);
-                    processingDialog.show();
-                    new DeleteReplyThread(reply, reply_list, reply_item).start();
+                    AlertDialog alertDialog = new AlertDialog.Builder(context).create();
+                    alertDialog.setTitle("Warning");
+                    alertDialog.setIcon(R.drawable.attention);
+                    alertDialog.setMessage("Are you sure you want to delete this reply? All the data are unrecoverable.");
+                    alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "OK",
+                            new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int which) {
+                                    dialog.dismiss();
+                                    processingDialog = new Dialog(context, R.style.theme_dialog);
+                                    processingDialog.setContentView(R.layout.processing_dialog);
+                                    processingDialog.setCancelable(false);
+                                    processingDialog.show();
+                                    new DeleteReplyThread(reply, reply_list, reply_item).start();
+                                }
+                            });
+                    alertDialog.setButton(AlertDialog.BUTTON_NEGATIVE, "Cancel",
+                            new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int which) {
+                                    dialog.dismiss();
+                                }
+                            });
+                    alertDialog.show();
                 }
             });
         }else

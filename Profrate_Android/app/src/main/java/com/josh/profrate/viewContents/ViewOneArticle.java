@@ -1,10 +1,11 @@
 package com.josh.profrate.viewContents;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.Bitmap;
 import android.os.Handler;
 import android.os.Message;
 import android.view.LayoutInflater;
@@ -96,11 +97,28 @@ public class ViewOneArticle extends ViewContent{
             parentLayout.findViewById(R.id.btn_delete).setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    processingDialog = new Dialog(context, R.style.theme_dialog);
-                    processingDialog.setContentView(R.layout.processing_dialog);
-                    processingDialog.setCancelable(false);
-                    processingDialog.show();
-                    new DeleteArticleThread().start();
+                    AlertDialog alertDialog = new AlertDialog.Builder(context).create();
+                    alertDialog.setTitle("Warning");
+                    alertDialog.setIcon(R.drawable.attention);
+                    alertDialog.setMessage("Are you sure you want to delete this article? All the data are unrecoverable.");
+                    alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "OK",
+                            new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int which) {
+                                    dialog.dismiss();
+                                    processingDialog = new Dialog(context, R.style.theme_dialog);
+                                    processingDialog.setContentView(R.layout.processing_dialog);
+                                    processingDialog.setCancelable(false);
+                                    processingDialog.show();
+                                    new DeleteArticleThread().start();
+                                }
+                            });
+                    alertDialog.setButton(AlertDialog.BUTTON_NEGATIVE, "Cancel",
+                            new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int which) {
+                                    dialog.dismiss();
+                                }
+                            });
+                    alertDialog.show();
                 }
             });
         }else

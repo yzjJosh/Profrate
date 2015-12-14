@@ -42,6 +42,7 @@ public class WriteArticleActivity extends Activity {
     public void onBackClick(View view){
         AlertDialog alertDialog = new AlertDialog.Builder(WriteArticleActivity.this).create();
         alertDialog.setTitle("Warning");
+        alertDialog.setIcon(R.drawable.attention);
         alertDialog.setMessage("Are you sure you want to cancel posting this article? All the data will lost.");
         alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "OK",
                 new DialogInterface.OnClickListener() {
